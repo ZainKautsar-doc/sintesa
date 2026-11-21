@@ -29,6 +29,10 @@ export async function sendChat(
         risk_level: detectionContext.risk_level,
       }
     : null;
-  const { data } = await api.post('/api/chat', { detection_context: context, messages });
+  const recentMessages = messages.slice(-6).map((message) => ({
+    role: message.role,
+    content: message.content,
+  }));
+  const { data } = await api.post('/api/chat', { detection_context: context, messages: recentMessages });
   return data;
 }

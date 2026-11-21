@@ -39,7 +39,30 @@ async def chat_completion(detection_context: dict | None, messages: list[dict]) 
     payload_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     if context_text:
         payload_messages.append({"role": "system", "content": context_text})
-    payload_messages.extend(messages)
+    allowed_topics = (
+        "deepfake", "gambar", "audio", "video", "suara", "voice", "rekam",
+        "deteksi", "keaslian", "orisinal", "forensik", "ela", "spectrogram",
+        "saya", "verifikasi", "e-kyc", "ekyc", "social engineering", "phishing",
+        "penipuan", "mitigasi", "keamanan", "hasil", "media", "kloning",
+        "deep fake", "impostor", "identitas", "risiko", "confidence",
+    )
+    if messages:
+        latest_message = str(messages[-1].get("content", "")).strip().lower()
+        if len(latest_message) > 500:
+            return (
+                "Pertanyaan terlalu panjang. Ringkas menjadi maks. 500 karakter agar dapat diproses.",
+                "none",
+                True,
+            )
+        if latest_message and not any(topic in latest_message for topic in allowed_topics):
+            return (
+                "SINTESA Assistant hanya menjawab pertanyaan terkait deteksi deepfake, forensik media, verifikasi identitas, serta pencegahan social engineering.",
+                "none",
+                True,
+            )
+
+    # Kirim hanya konteks dan maksimal 6 pesan terakhir untuk mencegah pertumbuhan token.
+    payload_messages.extend(messages[-6:] if isinstance(messages, list) else [])
 
     models = [OPENROUTER_PRIMARY_MODEL, *OPENROUTER_FALLBACK_MODELS]
     headers = {

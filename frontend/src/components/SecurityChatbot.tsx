@@ -31,6 +31,10 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
   const submit = async (text = input) => {
     const content = text.trim();
     if (!content || loading) return;
+    if (content.length > 500) {
+      setMessages((current) => [...current, { role: 'assistant', content: 'Pertanyaan terlalu panjang. Ringkas menjadi maksimal 500 karakter.' }]);
+      return;
+    }
     const next = [...messages, { role: 'user' as const, content }];
     setMessages(next);
     setInput('');
@@ -51,7 +55,7 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
     <div className="flex h-[650px] flex-col rounded-xl border border-slate-800 bg-slate-900/70 backdrop-blur">
       <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3">
         <Bot className="h-5 w-5 text-emerald-400" />
-        <div><p className="text-sm font-semibold">SINTESA Assistant</p><p className="text-xs text-slate-500">Mitigasi & keamanan</p></div>
+        <div><p className="text-sm font-semibold">SINTESA Assistant</p><p className="text-xs text-slate-500">Konteks deepfake • maks. 500 karakter/pesan</p></div>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -70,7 +74,7 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
           {prompts.map((prompt) => <button key={prompt} onClick={() => submit(prompt)} className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-400 hover:border-emerald-500/50 hover:text-emerald-300">{prompt}</button>)}
         </div>
         <div className="flex gap-2">
-          <input value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && submit()} placeholder="Tanyakan tentang hasil ini..." className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-emerald-500" />
+          <input value={input} maxLength={500} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && submit()} placeholder="Tanyakan tentang hasil ini..." className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 text-sm outline-none focus:border-emerald-500" />
           <button onClick={() => submit()} className="rounded-lg bg-emerald-500 p-3 text-slate-950"><Send className="h-4 w-4" /></button>
         </div>
       </div>
