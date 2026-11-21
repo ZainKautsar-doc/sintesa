@@ -1,0 +1,7 @@
+backend/.env
+**/__pycache__/
+backend/venv/
+.venv/
+frontend/node_modules/
+frontend/dist/
+evaluation/dataset/
