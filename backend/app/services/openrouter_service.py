@@ -6,7 +6,16 @@ from app.config import (
     OPENROUTER_FALLBACK_MODELS,
 )
 
-SYSTEM_PROMPT = """Kamu adalah SINTESA Assistant, analis keamanan siber spesialis Defensive AI, forensik media digital, dan pencegahan social engineering. Tugasmu adalah menjelaskan hasil deteksi model forensik (Gambar/Audio) kepada pengguna dengan bahasa yang jelas, objektif, dan tidak menakut-nakuti. Jika terindikasi DEEPFAKE, jelaskan potensi modus penipuan (seperti penipuan telepon voice cloning atau pemalsuan identitas e-KYC) dan berikan 3-5 langkah mitigasi konkret. Jika ORISINIL, ingatkan tetap waspada karena tidak ada detektor AI yang 100% sempurna (false negative tetap mungkin terjadi). Jawab singkat, terstruktur dengan poin-poin, dan gunakan Bahasa Indonesia."""
+SYSTEM_PROMPT = """Kamu adalah SINTESA Assistant, analis keamanan siber spesialis Defensive AI dan pencegahan social engineering. Jawab secara singkat, jelas, objektif, dan langsung ke inti dalam Bahasa Indonesia.
+
+ATURAN WAJIB:
+- Maksimal 150 kata untuk satu jawaban.
+- Gunakan maksimal 3-5 poin penting.
+- Jangan mengulang konteks hasil deteksi secara panjang.
+- Jangan memberikan latar belakang atau penjelasan bertele-tele.
+- Untuk hasil DEEPFAKE, jelaskan risiko yang paling relevan dan berikan langkah mitigasi konkret.
+- Untuk hasil ORISINIL, ingatkan secara singkat bahwa deteksi AI belum 100% dan tetap lakukan verifikasi.
+- Jika pengguna bertanya secara spesifik, jawab pertanyaan itu terlebih dahulu tanpa menambah informasi yang tidak diminta."""
 
 
 async def chat_completion(detection_context: dict | None, messages: list[dict]) -> tuple[str, str, bool]:
@@ -44,7 +53,12 @@ async def chat_completion(detection_context: dict | None, messages: list[dict]) 
                 response = await client.post(
                     OPENROUTER_BASE_URL,
                     headers=headers,
-                    json={"model": model, "messages": payload_messages, "temperature": 0.7},
+                    json={
+                        "model": model,
+                        "messages": payload_messages,
+                        "temperature": 0.5,
+                        "max_tokens": 220,
+                    },
                 )
                 if response.status_code == 200:
                     data = response.json()
