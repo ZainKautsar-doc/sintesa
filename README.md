@@ -11,6 +11,8 @@
 - Visualisasi **Error Level Analysis (ELA)** untuk gambar.
 - Visualisasi **Mel-Spectrogram** untuk audio.
 - Rekaman suara langsung dari browser menggunakan `MediaRecorder API`.
+- Halaman **Simulasi Probabilitas** untuk mempelajari pembentukan skor Deepfake/Orisinil secara interaktif tanpa mengunggah atau merekam media.
+- Penjelasan tahap model untuk media gambar dan audio, contoh kasus, istilah probabilitas, dan confidence.
 - Asisten keamanan berbasis OpenRouter dengan sistem fallback model gratis.
 - Riwayat chat berbasis state frontend; aplikasi tidak menggunakan database.
 - Skrip evaluasi batch untuk gambar dan audio.
