@@ -85,8 +85,9 @@ async def chat_completion(detection_context: dict | None, messages: list[dict]) 
                 )
                 if response.status_code == 200:
                     data = response.json()
-                    reply = data["choices"][0]["message"]["content"]
-                    return reply, model, False
+                    reply = data["choices"][0]["message"].get("content")
+                    if isinstance(reply, str) and reply.strip():
+                        return reply.strip(), model, False
             except (httpx.HTTPError, KeyError, IndexError, ValueError):
                 continue
 
