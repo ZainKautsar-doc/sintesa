@@ -42,6 +42,10 @@ class AudioDetector:
 
     def predict(self, y: np.ndarray, sr: int):
         self.load()
+        if len(y) < sr:
+            raise ValueError("Durasi audio terlalu pendek, rekam minimal sekitar 1 detik")
+        y = y.astype(np.float32)
+        y = y / max(float(np.max(np.abs(y))), 1e-8)
         outputs = self._classifier({"array": y, "sampling_rate": sr}, top_k=None)
         probabilities = {"ORISINIL": 0.0, "DEEPFAKE": 0.0}
         for item in outputs:
@@ -60,7 +64,11 @@ class AudioDetector:
 
 def load_audio_segment(temp_path: str, max_seconds: int = 30):
     y, sr = librosa.load(temp_path, sr=16000, mono=True)
-    y = y[: max_seconds * sr]
+    if len(y) > sr:
+        peak_index = int(np.argmax(np.abs(y)))
+        desired_samples = max_seconds * sr
+        start = max(0, min(peak_index - desired_samples // 2, len(y) - desired_samples))
+        y = y[start:start + desired_samples]
     if len(y) == 0:
         raise ValueError("File audio tidak memiliki data yang dapat diproses")
     return y, sr

@@ -13,31 +13,78 @@ interface Props {
 export default function MediaUploader({ mediaType, file, onFile, onAnalyze, loading }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [recording, setRecording] = useState(false);
+  const [recordingError, setRecordingError] = useState('');
 
   const accept = mediaType === 'image' ? '.jpg,.jpeg,.png,.webp,image/*' : '.wav,.mp3,.ogg,.flac,.webm,audio/*';
 
   const toggleRecording = async () => {
+    setRecordingError('');
+
     if (recording && recorderRef.current) {
       recorderRef.current.stop();
       setRecording(false);
       return;
     }
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const recorder = new MediaRecorder(stream);
-    chunksRef.current = [];
-    recorder.ondataavailable = (event) => {
-      if (event.data.size) chunksRef.current.push(event.data);
-    };
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-      onFile(new File([blob], 'rekaman-mikrofon.webm', { type: blob.type }));
-      stream.getTracks().forEach((track) => track.stop());
-    };
-    recorder.start();
-    recorderRef.current = recorder;
-    setRecording(true);
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setRecordingError('Perekaman mikrofon tidak didukung oleh browser ini.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      const supportedType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
+        .find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = supportedType
+        ? new MediaRecorder(stream, { mimeType: supportedType })
+        : new MediaRecorder(stream);
+
+      streamRef.current = stream;
+      chunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        setRecordingError('Perekaman gagal. Coba lagi atau gunakan file audio.');
+        setRecording(false);
+      };
+      recorder.onstop = () => {
+        const type = recorder.mimeType || 'audio/webm';
+        const blob = new Blob(chunksRef.current, { type });
+        if (blob.size > 0) {
+          const extension = type.includes('ogg') ? 'ogg' : 'webm';
+          onFile(new File([blob], `rekaman-mikrofon.${extension}`, { type: blob.type }));
+        } else {
+          setRecordingError('Tidak ada audio yang direkam. Coba bicara lebih lama.');
+        }
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        recorderRef.current = null;
+      };
+
+      recorder.start(250);
+      recorderRef.current = recorder;
+      setRecording(true);
+    } catch (error) {
+      const name = error instanceof DOMException ? error.name : '';
+      if (name === 'NotAllowedError') {
+        setRecordingError('Izin mikrofon ditolak. Aktifkan izin mikrofon pada browser.');
+      } else if (name === 'NotFoundError') {
+        setRecordingError('Mikrofon tidak ditemukan.');
+      } else {
+        setRecordingError('Mikrofon tidak dapat digunakan. Pastikan perangkat aktif.');
+      }
+    }
   };
 
   return (
@@ -66,10 +113,13 @@ export default function MediaUploader({ mediaType, file, onFile, onAnalyze, load
       ))}
 
       {mediaType === 'audio' && (
-        <button type="button" onClick={toggleRecording} className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800">
-          {recording ? <Square className="h-4 w-4 text-rose-400" /> : <Mic className="h-4 w-4" />}
-          {recording ? 'Hentikan Rekaman' : 'Rekam Suara (Mikrofon)'}
-        </button>
+        <>
+          <button type="button" onClick={toggleRecording} className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-emerald-500/60 hover:bg-slate-800">
+            {recording ? <Square className="h-4 w-4 text-rose-400" /> : <Mic className="h-4 w-4" />}
+            {recording ? 'Hentikan Rekaman' : 'Rekam Suara (Mikrofon)'}
+          </button>
+          {recordingError && <p className="text-center text-xs text-rose-400">{recordingError}</p>}
+        </>
       )}
 
       <button type="button" disabled={!file || loading} onClick={onAnalyze} className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40">
