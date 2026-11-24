@@ -6,6 +6,7 @@ import SecurityChatbot from './components/SecurityChatbot';
 import SimulationPage from './components/SimulationPage';
 import { detectMedia } from './services/api';
 import type { DetectionResult as DetectionResultType, MediaType } from './types';
+import { RefreshCw, Sparkles, Sliders } from 'lucide-react';
 
 function App() {
   const [mediaType, setMediaType] = useState<MediaType>('image');
@@ -55,35 +56,100 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-parchment text-ink antialiased">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex rounded-lg border border-slate-800 bg-slate-900 p-1">
-            <button onClick={() => setPage('detection')} className={`rounded-md px-4 py-2 text-sm ${page === 'detection' ? 'bg-emerald-500 text-slate-950 font-semibold' : 'text-slate-400'}`}>Deteksi Media</button>
-            <button onClick={() => setPage('simulation')} className={`rounded-md px-4 py-2 text-sm ${page === 'simulation' ? 'bg-cyan-500 text-slate-950 font-semibold' : 'text-slate-400'}`}>Simulasi Probabilitas</button>
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        {/* Top Navigation Bar / Page Switcher */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-warm-mist pb-4">
+          <div className="inline-flex rounded-btn border border-warm-mist bg-soft-paper p-1 shadow-subtle">
+            <button
+              onClick={() => setPage('detection')}
+              className={`flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-medium transition-all ${
+                page === 'detection'
+                  ? 'bg-deep-teal text-white shadow-sm'
+                  : 'text-graphite hover:text-ink hover:bg-parchment'
+              }`}
+            >
+              <Sparkles className="h-4 w-4" />
+              Deteksi Media
+            </button>
+            <button
+              onClick={() => setPage('simulation')}
+              className={`flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-medium transition-all ${
+                page === 'simulation'
+                  ? 'bg-deep-teal text-white shadow-sm'
+                  : 'text-graphite hover:text-ink hover:bg-parchment'
+              }`}
+            >
+              <Sliders className="h-4 w-4" />
+              Simulasi Probabilitas
+            </button>
           </div>
-          {page === 'detection' && <button onClick={reset} className="text-sm text-slate-400 hover:text-slate-100">Reset</button>}
+
+          {page === 'detection' && (
+            <button
+              onClick={reset}
+              className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Reset Form
+            </button>
+          )}
         </div>
 
         {page === 'simulation' ? (
           <SimulationPage />
         ) : (
           <>
-            <div className="mb-4 flex rounded-lg border border-slate-800 bg-slate-900 p-1 w-fit">
-              {(['image', 'audio'] as const).map((mode) => (
-                <button key={mode} onClick={() => changeMode(mode)} className={`rounded-md px-4 py-2 text-sm ${mediaType === mode ? 'bg-emerald-500 text-slate-950 font-semibold' : 'text-slate-400'}`}>
-                  {mode === 'image' ? 'Deteksi Gambar' : 'Deteksi Audio'}
-                </button>
-              ))}
+            {/* Mode Selector for Detection */}
+            <div className="mb-6 flex items-center justify-between">
+              <div className="inline-flex rounded-btn border border-warm-mist bg-soft-paper p-1 shadow-subtle">
+                {(['image', 'audio'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => changeMode(mode)}
+                    className={`rounded-btn px-4 py-2 text-sm font-medium transition-all ${
+                      mediaType === mode
+                        ? 'bg-deep-teal text-white shadow-sm'
+                        : 'text-graphite hover:text-ink hover:bg-parchment'
+                    }`}
+                  >
+                    {mode === 'image' ? 'Deteksi Gambar' : 'Deteksi Audio'}
+                  </button>
+                ))}
+              </div>
+              <p className="hidden text-xs text-ash sm:block">
+                Format didukung: {mediaType === 'image' ? 'JPG, PNG, WEBP' : 'WAV, MP3, WEBM, FLAC'}
+              </p>
             </div>
-            {error && <div className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{error}</div>}
-            <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
-              <section className="space-y-5">
-                <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 backdrop-blur"><MediaUploader mediaType={mediaType} file={file} onFile={onFile} onAnalyze={analyze} loading={loading} /></div>
-                <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 backdrop-blur"><DetectionResult result={result} /></div>
+
+            {error && (
+              <div className="mb-6 rounded-card border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-subtle">
+                {error}
+              </div>
+            )}
+
+            <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+              <section className="space-y-6">
+                <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+                  <MediaUploader
+                    mediaType={mediaType}
+                    file={file}
+                    onFile={onFile}
+                    onAnalyze={analyze}
+                    loading={loading}
+                  />
+                </div>
+                <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+                  <DetectionResult result={result} />
+                </div>
               </section>
-              <aside><SecurityChatbot result={result} resetKey={resetKey} /></aside>
+
+              <aside>
+                <div className="sticky top-6">
+                  <SecurityChatbot result={result} resetKey={resetKey} />
+                </div>
+              </aside>
             </div>
           </>
         )}

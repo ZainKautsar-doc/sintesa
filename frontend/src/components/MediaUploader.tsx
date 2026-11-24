@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Image, Mic, Upload, Square } from 'lucide-react';
+import { Image, Mic, Upload, Square, FileCheck, AlertCircle } from 'lucide-react';
 import type { MediaType } from '../types';
 
 interface Props {
@@ -88,7 +88,16 @@ export default function MediaUploader({ mediaType, file, onFile, onAnalyze, load
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-base font-semibold text-ink">
+          {mediaType === 'image' ? 'Unggah Citra / Foto' : 'Unggah atau Rekam Audio'}
+        </h2>
+        <p className="mt-1 text-xs text-graphite">
+          Pilih sampel media untuk diuji keasliannya menggunakan model forensik AI.
+        </p>
+      </div>
+
       <div
         onDragOver={(event) => event.preventDefault()}
         onDrop={(event) => {
@@ -97,34 +106,88 @@ export default function MediaUploader({ mediaType, file, onFile, onAnalyze, load
           if (dropped) onFile(dropped);
         }}
         onClick={() => inputRef.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-950/50 px-6 py-10 text-center transition hover:border-emerald-500/60"
+        className="group flex cursor-pointer flex-col items-center justify-center rounded-input border border-dashed border-warm-mist bg-parchment px-6 py-10 text-center transition hover:border-deep-teal hover:bg-soft-paper"
       >
-        <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={(event) => event.target.files?.[0] && onFile(event.target.files[0])} />
-        {mediaType === 'image' ? <Image className="mb-3 h-8 w-8 text-emerald-400" /> : <Mic className="mb-3 h-8 w-8 text-emerald-400" />}
-        <p className="text-sm font-medium text-slate-200">Seret & jatuhkan atau pilih file</p>
-        <p className="mt-1 text-xs text-slate-500">Maksimal 10 MB</p>
-        {file && <p className="mt-3 max-w-full truncate rounded-md bg-slate-800 px-3 py-1 text-xs text-emerald-300">{file.name}</p>}
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={(event) => event.target.files?.[0] && onFile(event.target.files[0])}
+        />
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-soft-paper border border-warm-mist text-graphite group-hover:border-deep-teal/40 group-hover:text-deep-teal">
+          {mediaType === 'image' ? <Image className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+        </div>
+        <p className="text-sm font-medium text-ink">
+          Seret & letakkan file di sini, atau <span className="text-deep-teal underline decoration-deep-teal/40 underline-offset-2">pilih dokumen</span>
+        </p>
+        <p className="mt-1.5 text-xs text-ash">
+          Ukuran maksimal 10 MB ({mediaType === 'image' ? 'PNG, JPG, WEBP' : 'WAV, MP3, WEBM, FLAC'})
+        </p>
+
+        {file && (
+          <div className="mt-4 flex items-center gap-2 rounded-btn border border-deep-teal/30 bg-deep-teal-light px-3 py-1.5 text-xs text-deep-teal">
+            <FileCheck className="h-4 w-4" />
+            <span className="max-w-[280px] truncate font-medium">{file.name}</span>
+            <span className="text-ash">({(file.size / 1024).toFixed(1)} KB)</span>
+          </div>
+        )}
       </div>
 
-      {file && (mediaType === 'image' ? (
-        <img src={URL.createObjectURL(file)} alt="Preview" className="max-h-72 w-full rounded-xl object-contain bg-slate-950" />
-      ) : (
-        <audio controls src={URL.createObjectURL(file)} className="w-full" />
-      ))}
-
-      {mediaType === 'audio' && (
-        <>
-          <button type="button" onClick={toggleRecording} className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-emerald-500/60 hover:bg-slate-800">
-            {recording ? <Square className="h-4 w-4 text-rose-400" /> : <Mic className="h-4 w-4" />}
-            {recording ? 'Hentikan Rekaman' : 'Rekam Suara (Mikrofon)'}
-          </button>
-          {recordingError && <p className="text-center text-xs text-rose-400">{recordingError}</p>}
-        </>
+      {file && (
+        <div className="rounded-input border border-warm-mist bg-parchment p-3">
+          <p className="mb-2 text-xs font-medium text-graphite">Pratinjau Media</p>
+          {mediaType === 'image' ? (
+            <div className="flex justify-center overflow-hidden rounded-btn bg-soft-paper p-2">
+              <img
+                src={URL.createObjectURL(file)}
+                alt="Preview"
+                className="max-h-64 w-auto rounded object-contain"
+              />
+            </div>
+          ) : (
+            <div className="rounded-btn bg-soft-paper p-3">
+              <audio controls src={URL.createObjectURL(file)} className="w-full" />
+            </div>
+          )}
+        </div>
       )}
 
-      <button type="button" disabled={!file || loading} onClick={onAnalyze} className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40">
-        {loading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" /> : <Upload className="h-5 w-5" />}
-        {loading ? 'Menganalisis...' : 'Analisis Media'}
+      {mediaType === 'audio' && (
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={toggleRecording}
+            className={`flex w-full items-center justify-center gap-2 rounded-btn border py-2.5 text-sm font-medium transition ${
+              recording
+                ? 'border-rose-400 bg-rose-50 text-rose-700 animate-pulse'
+                : 'border-warm-mist bg-soft-paper text-ink hover:border-graphite shadow-subtle'
+            }`}
+          >
+            {recording ? <Square className="h-4 w-4 text-rose-600" /> : <Mic className="h-4 w-4 text-graphite" />}
+            {recording ? 'Hentikan Perekaman Suara' : 'Rekam Suara Langsung (Mikrofon)'}
+          </button>
+          {recordingError && (
+            <div className="flex items-center gap-1.5 text-xs text-rose-600">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <span>{recordingError}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <button
+        type="button"
+        disabled={!file || loading}
+        onClick={onAnalyze}
+        className="flex w-full items-center justify-center gap-2 rounded-btn bg-deep-teal px-4 py-3 text-sm font-medium text-white shadow-subtle transition hover:bg-deep-teal-hover disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        {loading ? (
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+        ) : (
+          <Upload className="h-4 w-4" />
+        )}
+        {loading ? 'Sedang Memeriksa Sampel...' : 'Jalankan Analisis Forensik'}
       </button>
     </div>
   );

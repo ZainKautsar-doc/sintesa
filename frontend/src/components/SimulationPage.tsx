@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, BookOpen, BrainCircuit, Image, Info, RotateCcw, Volume2 } from 'lucide-react';
+import { BarChart3, BookOpen, BrainCircuit, Image, Info, RotateCcw, Volume2, HelpCircle } from 'lucide-react';
 
 const cases = [
   { label: 'Prediksi kuat', deepfake: 92, description: 'Nilai Deepfake jauh lebih tinggi daripada Orisinil. Model cukup yakin, tetapi hasil tetap perlu diverifikasi.' },
@@ -16,104 +16,267 @@ export default function SimulationPage() {
   const certainty = confidence >= 80 ? 'Sangat kuat' : confidence >= 60 ? 'Cukup kuat' : 'Hampir seimbang';
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-5 md:p-7">
-        <div className="mb-6 flex items-start gap-3">
-          <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-2"><BookOpen className="h-5 w-5 text-cyan-400" /></div>
+    <div className="space-y-6">
+      {/* Simulation Workspace Card */}
+      <section className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card md:p-8">
+        <div className="mb-6 flex items-start gap-3 border-b border-warm-mist pb-5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal border border-deep-teal/20">
+            <BookOpen className="h-5 w-5" />
+          </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-400">Mode Pembelajaran</p>
-            <h2 className="mt-1 text-xl font-bold text-slate-100">Simulasi Probabilitas Deepfake</h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">Geser nilai untuk melihat bagaimana model membandingkan probabilitas dua kemungkinan. Model selalu memilih kemungkinan dengan skor tertinggi.</p>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-deep-teal-light px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-deep-teal">
+                Mode Pembelajaran Interaktif
+              </span>
+            </div>
+            <h2 className="mt-1 text-xl font-bold text-ink">Simulasi Probabilitas Keputusan Deepfake</h2>
+            <p className="mt-1 max-w-3xl text-xs leading-5 text-graphite">
+              Geser nilai untuk mempelajari bagaimana model membandingkan probabilitas dua kemungkinan. Model selalu mengklasifikasikan kelas dengan probabilitas tertinggi.
+            </p>
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_.75fr]">
-          <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-5">
-            <div className="mb-5 flex items-center justify-between">
-              <label htmlFor="deepfake" className="text-sm font-semibold text-slate-300">Probabilitas Deepfake</label>
-              <button type="button" onClick={() => setDeepfake(50)} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-200"><RotateCcw className="h-3.5 w-3.5" />Reset 50/50</button>
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* Slider input */}
+          <div className="rounded-card border border-warm-mist bg-parchment p-6 shadow-subtle">
+            <div className="mb-4 flex items-center justify-between">
+              <label htmlFor="deepfake" className="text-sm font-semibold text-ink">
+                Probabilitas Deepfake
+              </label>
+              <button
+                type="button"
+                onClick={() => setDeepfake(50)}
+                className="flex items-center gap-1 rounded-btn border border-warm-mist bg-soft-paper px-2.5 py-1 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset 50/50
+              </button>
             </div>
-            <input id="deepfake" type="range" min="0" max="100" value={deepfake} onChange={(event) => setDeepfake(Number(event.target.value))} className="h-2 w-full cursor-pointer accent-emerald-400" />
 
-            <div className="mt-6 space-y-4">
-              <ProbabilityBar label="DEEPFAKE" value={deepfake} color="rose" />
-              <ProbabilityBar label="ORISINIL" value={original} color="emerald" />
+            <div className="my-6">
+              <input
+                id="deepfake"
+                type="range"
+                min="0"
+                max="100"
+                value={deepfake}
+                onChange={(event) => setDeepfake(Number(event.target.value))}
+                className="h-2.5 w-full cursor-pointer appearance-none rounded-lg bg-warm-mist accent-deep-teal"
+              />
+              <div className="mt-2 flex justify-between text-[11px] text-ash">
+                <span>0% (Pasti Orisinil)</span>
+                <span>50% (Ambang Batas)</span>
+                <span>100% (Pasti Deepfake)</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <ProbabilityBar label="DEEPFAKE" value={deepfake} isDeepfake={true} />
+              <ProbabilityBar label="ORISINIL" value={original} isDeepfake={false} />
             </div>
           </div>
 
-          <div className="flex flex-col justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-5">
+          {/* Outcome card */}
+          <div className="flex flex-col justify-between rounded-card border border-warm-mist bg-parchment p-6 shadow-subtle">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Hasil Simulasi</p>
-              <p className={`mt-3 text-3xl font-black ${winner === 'DEEPFAKE' ? 'text-rose-400' : 'text-emerald-400'}`}>{winner}</p>
-              <p className="mt-2 text-sm text-slate-400">Confidence: <strong className="text-slate-200">{confidence}%</strong></p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-graphite">
+                Keputusan Klasifikasi Model
+              </p>
+              <div className="mt-2 flex items-center justify-between">
+                <p
+                  className={`text-3xl font-extrabold tracking-tight ${
+                    winner === 'DEEPFAKE' ? 'text-deep-teal' : 'text-emerald-600'
+                  }`}
+                >
+                  {winner}
+                </p>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    winner === 'DEEPFAKE'
+                      ? 'border border-deep-teal/30 bg-deep-teal-light text-deep-teal'
+                      : 'border border-emerald-500/30 bg-emerald-50 text-emerald-700'
+                  }`}
+                >
+                  Keyakinan: {certainty}
+                </span>
+              </div>
+              <p className="mt-3 text-xs text-graphite">
+                Confidence Score:{' '}
+                <strong className="text-base font-bold text-ink">{confidence}%</strong>
+              </p>
             </div>
-            <div className="mt-5 rounded-lg border border-slate-800 bg-slate-900 p-4">
-              <p className="text-sm font-semibold text-slate-200">Tingkat keyakinan: {certainty}</p>
-              <p className="mt-1 text-xs leading-5 text-slate-500">{deepfake === 50 ? 'Nilai persis seimbang. Dalam praktik, prediksi seperti ini memerlukan verifikasi tambahan.' : 'Skor lebih tinggi menentukan label prediksi, bukan jaminan bahwa hasil benar.'}</p>
+
+            <div className="mt-6 rounded-input border border-warm-mist bg-soft-paper p-4 shadow-subtle">
+              <div className="flex items-start gap-2">
+                <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-deep-teal" />
+                <div>
+                  <p className="text-xs font-semibold text-ink">Catatan Forensik:</p>
+                  <p className="mt-1 text-xs leading-5 text-graphite">
+                    {deepfake === 50
+                      ? 'Kedua kelas tepat seimbang (50/50). Keputusan berada di batas ambang dan wajib diverifikasi manual.'
+                      : `Model menentukan ${winner} karena nilainya ${confidence}%, melebihi ambang 50%. Tingkat kepastian digolongkan "${certainty}".`}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-3">
+      {/* 3 Step Concept Cards */}
+      <section className="grid gap-6 md:grid-cols-3">
         <InfoCard
-          icon={<BrainCircuit />}
+          icon={<BrainCircuit className="h-5 w-5" />}
           title="1. Media Diproses"
-          text="Gambar disiapkan dan dipelajari berdasarkan fitur visual, seperti tekstur, tepi, pola kompresi, serta ketidakteraturan yang mencurigakan. Sementara itu, audio dinormalisasi dan diperiksa melalui pola spektral dan suara, termasuk ritme, frekuensi, transisi, serta karakter vokal. Perbedaan ini dapat membantu model mengenali pola yang sering muncul pada media hasil manipulasi."
+          text="Gambar diekstraksi fitur visualnya (tekstur, tepi, artefak kompresi). Audio dinormalisasi dan diubah ke spectrogram untuk memeriksa pola vokal dan spektral sintetis."
         />
         <InfoCard
-          icon={<BarChart3 />}
-          title="2. Model Membuat Skor"
-          text="Setelah ciri media diekstraksi, model menghitung dua nilai kemungkinan: satu untuk DEEPFAKE dan satu untuk ORISINIL. Kedua nilai dinyatakan dalam persen dan selalu berjumlah 100%. Misalnya, skor 51% Deepfake berarti model memberi nilai 49% untuk Orisinil. Nilai ini menunjukkan tingkat kecenderungan, bukan kepastian mutlak."
+          icon={<BarChart3 className="h-5 w-5" />}
+          title="2. Model Menghitung Skor"
+          text="Setelah representasi ciri diekstraksi, neural network menghitung distribusi probabilitas antara dua kelas (DEEPFAKE & ORISINIL) dengan total kumulatif 100%."
         />
         <InfoCard
-          icon={<Info />}
-          title="3. Label Dipilih"
-          text="Nilai tertinggi menentukan label hasil. Jika 51% masuk sebagai Deepfake dan 49% sebagai Orisinil, hasilnya adalah DEEPFAKE karena selisihnya kecil. Jika 82% Orisinil dan 18% Deepfake, hasilnya adalah ORISINIL dengan kecenderungan yang lebih kuat. Semakin mendekati 50/50, hasil semakin perlu verifikasi tambahan."
+          icon={<Info className="h-5 w-5" />}
+          title="3. Label Ditentukan"
+          text="Nilai tertinggi menentukan hasil akhir. Nilai yang mendekati 50/50 menunjukkan ambiguitas data dan memerlukan konfirmasi melalui saluran independen."
         />
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-2">
-        <article className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-          <div className="mb-4 flex items-center gap-2"><Image className="h-5 w-5 text-violet-400" /><h3 className="font-semibold">Simulasi Gambar</h3></div>
-          <div className="space-y-3 text-sm leading-6 text-slate-400"><p><strong className="text-slate-200">Tahapan:</strong> Resize → normalisasi → ekstraksi ciri visual → klasifikasi → dua probabilitas.</p><p>Fitur visual dapat mencakup tekstur, tepi, pola kompresi, dan ketidakselarasan artefak gambar.</p><div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3 text-xs">Contoh: 72% Orisinil dan 28% Deepfake berarti model lebih condong pada Orisinil.</div></div>
+      {/* Case Studies & Details */}
+      <section className="grid gap-6 lg:grid-cols-2">
+        <article className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+          <div className="mb-4 flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal">
+              <Image className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-ink">Pipeline Evaluasi Gambar</h3>
+              <p className="text-[11px] text-graphite">Visual Vision Transformer & ELA</p>
+            </div>
+          </div>
+          <div className="space-y-3 text-xs leading-5 text-graphite">
+            <p>
+              <strong className="text-ink">Alur Proses:</strong> Resize citra → Normalisasi piksel → Ekstraksi representasi latent → Perhitungan logit → Softmax probabilitas.
+            </p>
+            <p>
+              Error Level Analysis (ELA) membantu mendeteksi ketidakseragaman rasio kompresi JPEG pada bagian wajah atau area yang dimodifikasi.
+            </p>
+            <div className="rounded-input border border-warm-mist bg-parchment p-3 text-[11px] text-graphite">
+              💡 <span className="font-medium text-ink">Contoh Kasus:</span> 72% Orisinil vs 28% Deepfake berarti model tidak menemukan anomali kompresi signifikan.
+            </div>
+          </div>
         </article>
-        <article className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-          <div className="mb-4 flex items-center gap-2"><Volume2 className="h-5 w-5 text-cyan-400" /><h3 className="font-semibold">Simulasi Audio</h3></div>
-          <div className="space-y-3 text-sm leading-6 text-slate-400"><p><strong className="text-slate-200">Tahapan:</strong> Normalisasi audio → ekstraksi pola suara → klasifikasi → dua probabilitas.</p><p>Pola audio dapat mencakup ritme, frekuensi, transisi suara, dan karakter vokal sintetis.</p><div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3 text-xs">Contoh: 65% Deepfake dan 35% Orisinil berarti model lebih condong pada Deepfake.</div></div>
+
+        <article className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+          <div className="mb-4 flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal">
+              <Volume2 className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-ink">Pipeline Evaluasi Audio</h3>
+              <p className="text-[11px] text-graphite">Wav2Vec2 / Acoustic Architecture</p>
+            </div>
+          </div>
+          <div className="space-y-3 text-xs leading-5 text-graphite">
+            <p>
+              <strong className="text-ink">Alur Proses:</strong> Resample ke 16 kHz → Ekstraksi frame waveform → Konversi log-mel spectrogram → Deteksi ketidakteraturan sinyal vokal.
+            </p>
+            <p>
+              Voice cloning AI sering kali meninggalkan jejak frekuensi tinggi yang datar atau transisi fonem yang tidak natural.
+            </p>
+            <div className="rounded-input border border-warm-mist bg-parchment p-3 text-[11px] text-graphite">
+              💡 <span className="font-medium text-ink">Contoh Kasus:</span> 85% Deepfake menandakan adanya diskontinuitas fase atau spektrum sintetis khas model TTS/SVC.
+            </div>
+          </div>
         </article>
       </section>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
-        <h3 className="mb-4 font-semibold">Contoh Kasus Pemahaman</h3>
+      {/* Preset Scenarios */}
+      <section className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+        <h3 className="mb-1 text-sm font-semibold text-ink">Skenario Latihan Probabilitas</h3>
+        <p className="mb-4 text-xs text-graphite">Pilih salah satu kondisi di bawah untuk melihat interpretasi langsung:</p>
         <div className="grid gap-3 md:grid-cols-2">
           {cases.map((item) => (
-            <button key={item.label} type="button" onClick={() => setDeepfake(item.deepfake)} className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-left transition hover:border-slate-600">
-              <div className="flex items-center justify-between"><span className="text-sm font-semibold text-slate-200">{item.label}</span><span className="text-xs text-slate-500">{item.deepfake}% / {100 - item.deepfake}%</span></div>
-              <p className="mt-2 text-xs leading-5 text-slate-500">{item.description}</p>
+            <button
+              key={item.label}
+              type="button"
+              onClick={() => setDeepfake(item.deepfake)}
+              className="rounded-input border border-warm-mist bg-parchment p-4 text-left transition hover:border-deep-teal hover:bg-soft-paper shadow-subtle"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-ink">{item.label}</span>
+                <span className="rounded-full bg-soft-paper border border-warm-mist px-2 py-0.5 text-[11px] font-semibold text-deep-teal">
+                  Deepfake: {item.deepfake}% / Orisinil: {100 - item.deepfake}%
+                </span>
+              </div>
+              <p className="mt-2 text-xs leading-5 text-graphite">{item.description}</p>
             </button>
           ))}
         </div>
       </section>
 
-      <section className="grid gap-5 md:grid-cols-2">
-        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5"><h3 className="font-semibold text-amber-300">Istilah Penting</h3><dl className="mt-3 space-y-3 text-sm"><Term term="Probabilitas" text="Nilai kemungkinan untuk setiap kelas, biasanya dalam persen." /><Term term="Confidence" text="Probabilitas dari label yang dipilih sebagai hasil prediksi." /><Term term="50/50" text="Kondisi kedua kemungkinan seimbang dan hasil kurang pasti." /></dl></div>
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5"><h3 className="font-semibold text-emerald-300">Hal yang Perlu Diingat</h3><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-slate-400"><li>Probabilitas bukan kepastian mutlak.</li><li>Nilai mendekati 50/50 membutuhkan verifikasi lebih lanjut.</li><li>Hasil sebaiknya dikombinasikan dengan konteks dan bukti independen.</li></ul></div>
+      {/* Summary Terms & Guidelines */}
+      <section className="grid gap-6 md:grid-cols-2">
+        <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+          <h3 className="text-sm font-bold text-ink">Glosarium Metrik</h3>
+          <dl className="mt-3 space-y-3 text-xs">
+            <Term term="Probabilitas" text="Nilai estimasi peluang dari setiap kelas (0 - 100%) yang dihasilkan fungsi Softmax." />
+            <Term term="Confidence" text="Nilai probabilitas kelas pemenang yang dijadikan tolok ukur keyakinan model." />
+            <Term term="Margin 50/50" text="Kondisi ambiguitas di mana model tidak memiliki bukti konklusif untuk satu kelas." />
+          </dl>
+        </div>
+
+        <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+          <h3 className="text-sm font-bold text-ink">Prinsip Keamanan Informasi</h3>
+          <ul className="mt-3 list-disc space-y-2 pl-4 text-xs leading-5 text-graphite">
+            <li>Hasil deteksi AI merupakan indikator awal, bukan bukti legalitas mutlak.</li>
+            <li>Hasil dengan confidence rendah (&lt; 70%) wajib diverifikasi melalui jalur komunikasi alternatif.</li>
+            <li>Jangan mengunggah data identitas (KTP/Paspor) tanpa enkripsi atau izin yang sah.</li>
+          </ul>
+        </div>
       </section>
     </div>
   );
 }
 
-function ProbabilityBar({ label, value, color }: { label: string; value: number; color: 'rose' | 'emerald' }) {
-  const textColor = color === 'rose' ? 'text-rose-300' : 'text-emerald-300';
-  const gradient = color === 'rose' ? 'from-rose-600 to-rose-400' : 'from-emerald-600 to-emerald-400';
-  return <div><div className="mb-2 flex justify-between text-sm"><span className={textColor}>{label}</span><strong>{value}%</strong></div><div className="h-4 overflow-hidden rounded-full bg-slate-800"><div className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all`} style={{ width: `${value}%` }} /></div></div>;
+function ProbabilityBar({ label, value, isDeepfake }: { label: string; value: number; isDeepfake: boolean }) {
+  return (
+    <div>
+      <div className="mb-1.5 flex justify-between text-xs">
+        <span className="font-semibold text-graphite">{label}</span>
+        <strong className="text-ink">{value}%</strong>
+      </div>
+      <div className="h-2.5 overflow-hidden rounded-full bg-warm-mist/50">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            isDeepfake ? 'bg-deep-teal' : 'bg-emerald-500'
+          }`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 function InfoCard({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
-  return <article className="rounded-xl border border-slate-800 bg-slate-900/70 p-5"><div className="mb-3 flex items-center gap-2 text-emerald-400">{icon}<h3 className="text-sm font-semibold text-slate-200">{title}</h3></div><p className="text-sm leading-6 text-slate-400">{text}</p></article>;
+  return (
+    <article className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+      <div className="mb-3 flex items-center gap-2.5 text-deep-teal">
+        <div className="flex h-8 w-8 items-center justify-center rounded-btn bg-deep-teal-light border border-deep-teal/20">
+          {icon}
+        </div>
+        <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      </div>
+      <p className="text-xs leading-5 text-graphite">{text}</p>
+    </article>
+  );
 }
 
 function Term({ term, text }: { term: string; text: string }) {
-  return <div><dt className="font-semibold text-slate-200">{term}</dt><dd className="mt-0.5 text-slate-400">{text}</dd></div>;
+  return (
+    <div>
+      <dt className="font-semibold text-ink">{term}</dt>
+      <dd className="mt-0.5 text-graphite leading-relaxed">{text}</dd>
+    </div>
+  );
 }
