@@ -15,8 +15,13 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMessages([]), [resetKey]);
-  useEffect(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages, loading]);
+  useEffect(() => {
+    setMessages([]);
+  }, [resetKey]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   useEffect(() => {
     if (!result) return;
