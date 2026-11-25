@@ -22,29 +22,30 @@ interface LandingPageProps {
 
 export default function LandingPage({ onStartDetection, onStartSimulation }: LandingPageProps) {
   return (
-    <div className="space-y-16 py-4 md:py-8">
+    <div className="space-y-10 py-2 sm:space-y-16 sm:py-6">
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden rounded-card border border-warm-mist bg-soft-paper p-8 shadow-card md:p-12">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-deep-teal/20 bg-deep-teal-light px-3.5 py-1 text-xs font-semibold text-deep-teal">
-              <Sparkles className="h-3.5 w-3.5" />
+      <section className="relative overflow-hidden rounded-card border border-warm-mist bg-soft-paper p-5 shadow-card sm:p-8 md:p-12">
+        <div className="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-deep-teal/20 bg-deep-teal-light px-3 py-1 text-[11px] font-semibold text-deep-teal sm:text-xs">
+              <Sparkles className="h-3.5 w-3.5 shrink-0" />
               <span>Platform Defensive AI • Keamanan Informasi</span>
             </div>
 
-            <h1 className="font-sans text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+            <h1 className="font-sans text-2xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
               Identifikasi Forensik Rekayasa Citra & Suara Sintetis
             </h1>
 
-            <p className="max-w-2xl text-sm leading-relaxed text-graphite sm:text-base">
-              <strong className="text-ink">SINTESA</strong> menghadirkan deteksi manipulasi *deepfake* berbasis model *deep learning* lokal (Hugging Face) dipadukan dengan analisis visual forensik dan asisten mitigasi ancaman *social engineering* berbasis AI.
+            <p className="max-w-2xl text-xs leading-relaxed text-graphite sm:text-sm md:text-base">
+              <strong className="text-ink">SINTESA</strong> menghadirkan deteksi manipulasi *deepfake* berbasis model *deep learning* lokal dipadukan dengan analisis visual forensik dan asisten mitigasi ancaman *social engineering* berbasis AI.
             </p>
 
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Action Buttons: Full width stack on mobile, inline on desktop */}
+            <div className="flex flex-col gap-2.5 pt-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
               <button
                 type="button"
                 onClick={() => onStartDetection('image')}
-                className="flex items-center gap-2 rounded-btn bg-deep-teal px-5 py-3 text-sm font-semibold text-white shadow-subtle transition hover:bg-deep-teal-hover"
+                className="flex items-center justify-center gap-2 rounded-btn bg-deep-teal px-4 py-3 text-xs font-semibold text-white shadow-subtle transition hover:bg-deep-teal-hover sm:text-sm"
               >
                 <ImageIcon className="h-4 w-4" />
                 Mulai Deteksi Gambar
@@ -54,7 +55,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
               <button
                 type="button"
                 onClick={() => onStartDetection('audio')}
-                className="flex items-center gap-2 rounded-btn border border-warm-mist bg-parchment px-5 py-3 text-sm font-semibold text-ink shadow-subtle transition hover:border-graphite hover:bg-soft-paper"
+                className="flex items-center justify-center gap-2 rounded-btn border border-warm-mist bg-parchment px-4 py-3 text-xs font-semibold text-ink shadow-subtle transition hover:border-graphite hover:bg-soft-paper sm:text-sm"
               >
                 <Mic className="h-4 w-4 text-deep-teal" />
                 Deteksi Audio
@@ -63,20 +64,20 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
               <button
                 type="button"
                 onClick={onStartSimulation}
-                className="flex items-center gap-2 rounded-btn border border-transparent px-4 py-3 text-sm font-medium text-graphite transition hover:text-ink"
+                className="flex items-center justify-center gap-2 rounded-btn border border-warm-mist/60 bg-soft-paper px-4 py-2.5 text-xs font-medium text-graphite transition hover:text-ink sm:border-transparent sm:bg-transparent sm:text-sm"
               >
                 <Sliders className="h-4 w-4" />
                 Mode Simulasi
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 border-t border-warm-mist/60 pt-6 text-xs text-graphite">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <div className="flex flex-col gap-2 border-t border-warm-mist/60 pt-4 text-[11px] text-graphite sm:flex-row sm:items-center sm:gap-6 sm:pt-6 sm:text-xs">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                 <span>Privasi Lokal (Tanpa upload cloud luar)</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                 <span>Analisis Forensik ELA & Spektrogram</span>
               </div>
             </div>
@@ -84,21 +85,21 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
 
           {/* Interactive Preview Card */}
           <div className="relative">
-            <div className="relative rounded-card border border-warm-mist bg-parchment p-6 shadow-subtle">
-              <div className="mb-4 flex items-center justify-between border-b border-warm-mist/80 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-rose-500" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                  <span className="ml-2 font-mono text-[11px] text-graphite">preview_inference.log</span>
+            <div className="relative rounded-card border border-warm-mist bg-parchment p-4 shadow-subtle sm:p-6">
+              <div className="mb-3 flex items-center justify-between border-b border-warm-mist/80 pb-2.5 sm:mb-4 sm:pb-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-rose-500" />
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  <span className="ml-1.5 font-mono text-[10px] text-graphite sm:text-[11px]">preview_inference.log</span>
                 </div>
-                <span className="rounded-full bg-deep-teal-light px-2 py-0.5 text-[10px] font-bold text-deep-teal">
+                <span className="rounded-full bg-deep-teal-light px-2 py-0.5 text-[9px] font-bold text-deep-teal sm:text-[10px]">
                   LIVE STATUS
                 </span>
               </div>
 
-              <div className="space-y-4">
-                <div className="rounded-input border border-deep-teal/30 bg-deep-teal-light p-3.5 text-deep-teal">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="rounded-input border border-deep-teal/30 bg-deep-teal-light p-3 text-deep-teal sm:p-3.5">
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span>Hasil Deteksi Visual</span>
                     <span className="rounded-full bg-soft-paper px-2 py-0.5 text-[10px]">DEEPFAKE 94.2%</span>
@@ -108,7 +109,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
                   </p>
                 </div>
 
-                <div className="space-y-2 text-xs">
+                <div className="space-y-1.5 text-xs">
                   <div className="flex justify-between text-[11px] text-graphite">
                     <span>Distribusi Probabilitas</span>
                     <span className="font-semibold text-ink">94.2% vs 5.8%</span>
@@ -119,11 +120,11 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
                 </div>
 
                 <div className="rounded-input border border-warm-mist bg-soft-paper p-3 text-[11px] text-graphite">
-                  <div className="flex items-center gap-2 font-semibold text-ink">
-                    <Bot className="h-3.5 w-3.5 text-deep-teal" />
+                  <div className="flex items-center gap-1.5 font-semibold text-ink">
+                    <Bot className="h-3.5 w-3.5 text-deep-teal shrink-0" />
                     <span>Rekomendasi Mitigasi LLM:</span>
                   </div>
-                  <p className="mt-1 leading-relaxed">
+                  <p className="mt-1 leading-relaxed text-[11px]">
                     Jangan jadikan dokumen ini sebagai satu-satunya bukti verifikasi e-KYC. Mintalah panggilan video dengan tantangan gestur acak.
                   </p>
                 </div>
@@ -134,18 +135,18 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* 2. ALUR KERJA FORENSIK 4-TAHAP */}
-      <section className="space-y-6">
-        <div className="text-center">
+      <section className="space-y-5 sm:space-y-6">
+        <div className="text-center px-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-deep-teal">Tahapan Pipeline</p>
-          <h2 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+          <h2 className="mt-1 text-xl font-bold tracking-tight text-ink sm:text-2xl md:text-3xl">
             Bagaimana SINTESA Mengamankan & Menganalisis Media
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-xs text-graphite sm:text-sm">
+          <p className="mx-auto mt-1.5 max-w-2xl text-xs text-graphite sm:text-sm">
             Arsitektur bertingkat yang memadukan komputasi neural network lokal dengan penalaran kontekstual LLM.
           </p>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3.5 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <WorkflowStep
             step="01"
             icon={<Layers className="h-5 w-5" />}
@@ -174,9 +175,9 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* 3. CAPABILITY SHOWCASE */}
-      <section className="grid gap-6 md:grid-cols-3">
+      <section className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
         <CapabilityCard
-          icon={<ImageIcon className="h-6 w-6 text-deep-teal" />}
+          icon={<ImageIcon className="h-5 w-5 text-deep-teal sm:h-6 sm:w-6" />}
           title="Deteksi Gambar & ELA"
           badge="Vision Pipeline"
           points={[
@@ -186,7 +187,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
           ]}
         />
         <CapabilityCard
-          icon={<Mic className="h-6 w-6 text-deep-teal" />}
+          icon={<Mic className="h-5 w-5 text-deep-teal sm:h-6 sm:w-6" />}
           title="Deteksi Audio & Spektrogram"
           badge="Acoustic Pipeline"
           points={[
@@ -196,7 +197,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
           ]}
         />
         <CapabilityCard
-          icon={<Bot className="h-6 w-6 text-deep-teal" />}
+          icon={<Bot className="h-5 w-5 text-deep-teal sm:h-6 sm:w-6" />}
           title="Asisten Keamanan & Chat"
           badge="LLM Defense"
           points={[
@@ -208,23 +209,23 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* 4. EDUKASI KEWASPADAAN SOCIAL ENGINEERING */}
-      <section className="rounded-card border border-warm-mist bg-soft-paper p-8 shadow-card">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-warm-mist pb-4">
+      <section className="rounded-card border border-warm-mist bg-soft-paper p-5 shadow-card sm:p-8">
+        <div className="mb-5 flex flex-col gap-3 border-b border-warm-mist pb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
-            <h2 className="text-xl font-bold text-ink sm:text-2xl">
+            <h2 className="text-lg font-bold text-ink sm:text-xl md:text-2xl">
               Edukasi Kewaspadaan: Melawan Manipulasi Rekayasa Sosial
             </h2>
             <p className="mt-1 text-xs text-graphite sm:text-sm">
               Deepfake bukan hanya artefak visual, melainkan vektor serangan keamanan informasi yang berbahaya.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
             Zero-Trust Verification
           </span>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-5 grid-cols-1 md:grid-cols-3">
           <ThreatCard
             title="Bypass e-KYC & Perbankan"
             threat="Pencuri identitas menggunakan foto deepfake atau video wajah sintetis untuk membuka rekening bank bodong atau pinjaman online."
@@ -244,7 +245,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* 5. METRIK EVALUASI & KINERJA */}
-      <section className="grid gap-6 md:grid-cols-4">
+      <section className="grid gap-3.5 sm:gap-6 grid-cols-2 md:grid-cols-4">
         <StatCard
           number="< 500 ms"
           label="Latensi Inferensi Lokal"
@@ -268,12 +269,12 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* 6. PROFIL TUGAS AKHIR & DISCLAIMER */}
-      <section className="rounded-card border border-warm-mist bg-parchment p-8 shadow-subtle">
+      <section className="rounded-card border border-warm-mist bg-parchment p-5 shadow-subtle sm:p-8">
         <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-deep-teal" />
-              <h3 className="text-base font-bold text-ink">
+              <ShieldCheck className="h-5 w-5 text-deep-teal shrink-0" />
+              <h3 className="text-sm font-bold text-ink sm:text-base">
                 Proyek Tugas Akhir: Mata Kuliah Keamanan Informasi
               </h3>
             </div>
@@ -288,9 +289,9 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
             </div>
           </div>
 
-          <div className="flex flex-col justify-between rounded-card border border-warm-mist bg-soft-paper p-5">
+          <div className="flex flex-col justify-between rounded-card border border-warm-mist bg-soft-paper p-4 sm:p-5">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-deep-teal">Pusat Tindakan</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-deep-teal">Pusat Tindakan</p>
               <h4 className="mt-1 text-sm font-bold text-ink">Mulai Pengujian Sekarang</h4>
               <p className="mt-1 text-xs text-graphite">
                 Unggah dokumen foto mencurigakan atau rekam percakapan audio untuk dianalisis secara instan.
@@ -318,7 +319,7 @@ export default function LandingPage({ onStartDetection, onStartSimulation }: Lan
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-warm-mist pt-6 text-center text-xs text-ash">
+      <footer className="border-t border-warm-mist pt-6 text-center text-[11px] text-ash sm:text-xs">
         <p>© {new Date().getFullYear()} SINTESA • Sistem Identifikasi Rekayasa Suara dan Citra</p>
         <p className="mt-1">Defensive AI • Deepfake Forensics & Social Engineering Countermeasure</p>
       </footer>
@@ -338,15 +339,15 @@ function WorkflowStep({
   description: string;
 }) {
   return (
-    <div className="relative rounded-card border border-warm-mist bg-soft-paper p-6 shadow-subtle transition hover:border-deep-teal">
+    <div className="relative rounded-card border border-warm-mist bg-soft-paper p-4 shadow-subtle transition hover:border-deep-teal sm:p-6">
       <div className="flex items-center justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal border border-deep-teal/20">
+        <div className="flex h-9 w-9 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal border border-deep-teal/20 sm:h-10 sm:w-10">
           {icon}
         </div>
         <span className="font-mono text-xs font-bold text-ash">{step}</span>
       </div>
-      <h3 className="mt-4 text-sm font-bold text-ink">{title}</h3>
-      <p className="mt-2 text-xs leading-relaxed text-graphite">{description}</p>
+      <h3 className="mt-3 text-xs font-bold text-ink sm:mt-4 sm:text-sm">{title}</h3>
+      <p className="mt-1.5 text-xs leading-relaxed text-graphite sm:mt-2">{description}</p>
     </div>
   );
 }
@@ -363,17 +364,17 @@ function CapabilityCard({
   points: string[];
 }) {
   return (
-    <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-btn bg-parchment border border-warm-mist">
+    <div className="rounded-card border border-warm-mist bg-soft-paper p-5 shadow-card sm:p-6">
+      <div className="mb-3 flex items-center justify-between sm:mb-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-btn bg-parchment border border-warm-mist sm:h-10 sm:w-10">
           {icon}
         </div>
         <span className="rounded-full bg-deep-teal-light px-2.5 py-0.5 text-[10px] font-semibold text-deep-teal">
           {badge}
         </span>
       </div>
-      <h3 className="text-base font-bold text-ink">{title}</h3>
-      <ul className="mt-4 space-y-2.5 text-xs text-graphite">
+      <h3 className="text-sm font-bold text-ink sm:text-base">{title}</h3>
+      <ul className="mt-3 space-y-2 text-xs text-graphite sm:mt-4 sm:space-y-2.5">
         {points.map((pt, i) => (
           <li key={i} className="flex items-start gap-2">
             <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-deep-teal" />
@@ -395,9 +396,9 @@ function ThreatCard({
   defense: string;
 }) {
   return (
-    <div className="rounded-input border border-warm-mist bg-parchment p-5 shadow-subtle">
-      <h3 className="text-sm font-bold text-ink">{title}</h3>
-      <div className="mt-3 space-y-2 text-xs">
+    <div className="rounded-input border border-warm-mist bg-parchment p-4 shadow-subtle sm:p-5">
+      <h3 className="text-xs font-bold text-ink sm:text-sm">{title}</h3>
+      <div className="mt-2.5 space-y-2 text-xs sm:mt-3">
         <div>
           <span className="font-semibold text-rose-800">Vektor Ancaman:</span>
           <p className="mt-0.5 text-graphite leading-relaxed">{threat}</p>
@@ -421,10 +422,10 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-subtle">
-      <p className="font-sans text-2xl font-black text-deep-teal sm:text-3xl">{number}</p>
+    <div className="rounded-card border border-warm-mist bg-soft-paper p-4 shadow-subtle sm:p-6">
+      <p className="font-sans text-xl font-black text-deep-teal sm:text-2xl md:text-3xl">{number}</p>
       <p className="mt-1 text-xs font-bold text-ink">{label}</p>
-      <p className="mt-2 text-[11px] leading-relaxed text-graphite">{description}</p>
+      <p className="mt-1.5 text-[11px] leading-relaxed text-graphite sm:mt-2">{description}</p>
     </div>
   );
 }

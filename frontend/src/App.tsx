@@ -73,7 +73,7 @@ function App() {
     <div className="min-h-screen bg-parchment text-ink antialiased">
       <Navbar currentPage={page} onNavigate={(nextPage) => setPage(nextPage)} />
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <main className="mx-auto max-w-7xl px-3 py-4 sm:px-6 sm:py-6">
         {page === 'landing' && (
           <LandingPage
             onStartDetection={handleStartDetection}
@@ -82,8 +82,8 @@ function App() {
         )}
 
         {page === 'simulation' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-warm-mist pb-4">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-warm-mist pb-3 sm:pb-4">
               <button
                 type="button"
                 onClick={() => setPage('landing')}
@@ -92,21 +92,21 @@ function App() {
                 <ArrowLeft className="h-4 w-4" />
                 Kembali ke Beranda
               </button>
-              <span className="text-xs text-ash">Edukasi Pembentukan Skor Keputusan</span>
+              <span className="text-[11px] text-ash sm:text-xs">Edukasi Pembentukan Skor Keputusan</span>
             </div>
             <SimulationPage />
           </div>
         )}
 
         {page === 'detection' && (
-          <div className="space-y-6">
-            {/* Top Workspace Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-warm-mist pb-4">
-              <div className="flex items-center gap-3">
+          <div className="space-y-5 sm:space-y-6">
+            {/* Top Workspace Controls: Responsive flex-wrap */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-warm-mist pb-3 sm:pb-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setPage('landing')}
-                  className="flex items-center gap-1 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-semibold text-graphite shadow-subtle transition hover:text-ink"
+                  className="flex items-center gap-1 rounded-btn border border-warm-mist bg-soft-paper px-2.5 py-1.5 text-xs font-semibold text-graphite shadow-subtle transition hover:text-ink sm:px-3"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   Beranda
@@ -117,7 +117,7 @@ function App() {
                     <button
                       key={mode}
                       onClick={() => changeMode(mode)}
-                      className={`flex items-center gap-1.5 rounded-btn px-4 py-1.5 text-xs font-semibold transition ${
+                      className={`flex items-center gap-1 rounded-btn px-2.5 py-1 text-xs font-semibold transition sm:gap-1.5 sm:px-4 sm:py-1.5 ${
                         mediaType === mode
                           ? 'bg-deep-teal text-white shadow-sm'
                           : 'text-graphite hover:text-ink hover:bg-parchment'
@@ -137,7 +137,7 @@ function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={reset}
-                  className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink"
+                  className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-2.5 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink sm:px-3"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   Reset Form
@@ -153,7 +153,7 @@ function App() {
 
             <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
               <section className="space-y-6">
-                <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+                <div className="rounded-card border border-warm-mist bg-soft-paper p-4 shadow-card sm:p-6">
                   <MediaUploader
                     mediaType={mediaType}
                     file={file}
@@ -162,13 +162,13 @@ function App() {
                     loading={loading}
                   />
                 </div>
-                <div className="rounded-card border border-warm-mist bg-soft-paper p-6 shadow-card">
+                <div className="rounded-card border border-warm-mist bg-soft-paper p-4 shadow-card sm:p-6">
                   <DetectionResult result={result} />
                 </div>
               </section>
 
               <aside>
-                <div className="sticky top-20">
+                <div className="lg:sticky lg:top-20">
                   <SecurityChatbot result={result} resetKey={resetKey} />
                 </div>
               </aside>
