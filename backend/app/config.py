@@ -13,7 +13,7 @@ OPENROUTER_FALLBACK_MODELS = [
     for model in os.getenv("OPENROUTER_FALLBACK_MODELS", "google/gemini-2.0-flash-exp:free,openrouter/free").split(",")
     if model.strip()
 ]
-IMAGE_MODEL_ID = os.getenv("IMAGE_MODEL_ID", "dima806/deepfake_vs_real_image_detection")
+IMAGE_MODEL_ID = os.getenv("IMAGE_MODEL_ID", "umm-maybe/AI-image-detector")
 AUDIO_MODEL_ID = os.getenv("AUDIO_MODEL_ID", "MelodyMachine/Deepfake-audio-detection-V2")
 MAX_FILE_SIZE_MB = int(os.getenv("MAX_FILE_SIZE_MB", "10"))
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")

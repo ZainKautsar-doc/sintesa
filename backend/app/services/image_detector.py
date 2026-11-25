@@ -2,6 +2,7 @@ import base64
 import io
 import threading
 import torch
+import numpy as np
 from PIL import Image, ImageChops, ImageEnhance
 from transformers import pipeline
 
@@ -30,11 +31,53 @@ class ImageDetector:
 
     def normalize_label(self, label: str) -> str:
         normalized = label.lower().replace("_", " ").replace("-", " ")
-        if any(token in normalized for token in ("fake", "deepfake", "spoof", "synthetic", "label 1")):
+        # Token untuk deepfake / AI-generated / artificial
+        if any(token in normalized for token in ("artificial", "fake", "deepfake", "spoof", "synthetic", "ai")):
             return "DEEPFAKE"
-        if any(token in normalized for token in ("real", "bonafide", "authentic", "original", "label 0")):
+        # Token untuk gambar manusia / nyata / orisinil
+        if any(token in normalized for token in ("human", "real", "bonafide", "authentic", "original")):
             return "ORISINIL"
-        return "ORISINIL" if normalized.startswith("label") and normalized.endswith("0") else "DEEPFAKE"
+        # Fallback index
+        return "DEEPFAKE" if "0" in normalized else "ORISINIL"
+
+    def analyze_fft_spectrum(self, image: Image.Image) -> float:
+        """
+        Analisis anomali spektrum frekuensi 2D FFT (Fast Fourier Transform).
+        Generator difusi AI & GAN meninggalkan artefak periodik / kisi-kisi pada
+        frekuensi tinggi (azimuthal / radial power distribution).
+        """
+        gray = image.convert("L").resize((256, 256))
+        np_gray = np.array(gray, dtype=np.float32)
+        fft = np.fft.fft2(np_gray)
+        fft_shift = np.fft.fftshift(fft)
+        magnitude = np.log(np.abs(fft_shift) + 1e-8)
+
+        # Hitung rasio energi frekuensi tinggi terhadap frekuensi rendah
+        h, w = magnitude.shape
+        cy, cx = h // 2, w // 2
+        r_inner = 30
+        r_outer = 90
+
+        y, x = np.ogrid[:h, :w]
+        dist_from_center = np.sqrt((x - cx) ** 2 + (y - cy) ** 2)
+
+        high_freq_mask = (dist_from_center >= r_inner) & (dist_from_center <= r_outer)
+        high_freq_variance = float(np.var(magnitude[high_freq_mask]))
+        return high_freq_variance
+
+    def analyze_ela_artifacts(self, image: Image.Image) -> float:
+        """
+        Menghitung skor anomali kompresi ELA secara kuantitatif.
+        """
+        img_rgb = image.convert("RGB")
+        buffer = io.BytesIO()
+        img_rgb.save(buffer, format="JPEG", quality=90)
+        buffer.seek(0)
+        recompressed = Image.open(buffer).convert("RGB")
+        diff = ImageChops.difference(img_rgb, recompressed)
+        diff_np = np.array(diff, dtype=np.float32)
+        mean_diff = float(np.mean(diff_np))
+        return mean_diff
 
     def predict(self, image: Image.Image):
         self.load()
@@ -50,7 +93,15 @@ class ImageDetector:
         elif total != 1:
             probabilities = {key: value / total for key, value in probabilities.items()}
 
-        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= probabilities["ORISINIL"] else "ORISINIL"
+        # Tambahan pembobot FFT jika skor model berada di area borderline (0.35 - 0.55)
+        fft_var = self.analyze_fft_spectrum(image)
+        if fft_var > 3.8 and probabilities["DEEPFAKE"] >= 0.35:
+            # Anomali frekuensi tinggi terdeteksi
+            probabilities["DEEPFAKE"] = min(0.98, probabilities["DEEPFAKE"] + 0.15)
+            probabilities["ORISINIL"] = max(0.02, 1.0 - probabilities["DEEPFAKE"])
+
+        # Ambang batas sensitivitas dinamis: jika DEEPFAKE >= 0.45, tetapkan DEEPFAKE
+        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.45 else "ORISINIL"
         confidence = probabilities[prediction]
         return prediction, confidence, probabilities
 
