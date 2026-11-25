@@ -25,12 +25,23 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
 
   useEffect(() => {
     if (!result) return;
+    let isMounted = true;
     setMessages([]);
     setLoading(true);
     sendChat(result, [{ role: 'user', content: 'Tolong jelaskan hasil deteksi ini dan apa yang harus saya lakukan.' }])
-      .then((response) => setMessages([{ role: 'assistant', content: response.reply }]))
-      .catch(() => setMessages([{ role: 'assistant', content: 'Ringkasan asisten belum dapat dimuat, tetapi hasil deteksi tetap tersedia.' }]))
-      .finally(() => setLoading(false));
+      .then((response) => {
+        if (isMounted) setMessages([{ role: 'assistant', content: response.reply }]);
+      })
+      .catch(() => {
+        if (isMounted) setMessages([{ role: 'assistant', content: 'Ringkasan asisten belum dapat dimuat, tetapi hasil deteksi tetap tersedia.' }]);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [result]);
 
   const submit = async (text = input) => {

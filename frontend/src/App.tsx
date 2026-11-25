@@ -5,6 +5,7 @@ import MediaUploader from './components/MediaUploader';
 import DetectionResult from './components/DetectionResult';
 import SecurityChatbot from './components/SecurityChatbot';
 import SimulationPage from './components/SimulationPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import { detectMedia } from './services/api';
 import type { DetectionResult as DetectionResultType, MediaType } from './types';
 import { RefreshCw, ArrowLeft, Image as ImageIcon, Mic } from 'lucide-react';
@@ -169,7 +170,9 @@ function App() {
 
               <aside>
                 <div className="lg:sticky lg:top-20">
-                  <SecurityChatbot result={result} resetKey={resetKey} />
+                  <ErrorBoundary fallbackTitle="Asisten Forensik AI Mengalami Gangguan">
+                    <SecurityChatbot result={result} resetKey={resetKey} />
+                  </ErrorBoundary>
                 </div>
               </aside>
             </div>

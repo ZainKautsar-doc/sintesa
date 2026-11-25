@@ -43,69 +43,99 @@ class AudioDetector:
     def analyze_acoustic_heuristics(self, y: np.ndarray, sr: int) -> dict:
         """
         Mengekstrak fitur akustik biologis manusia vs Text-to-Speech (TTS/Google Translate):
-        1. Digital Silence (ketiadaan ambient noise / noise floor = 0)
-        2. Cut-off frequency / Rolloff (codec TTS web memotong frekuensi di batas spesifik)
-        3. Variabilitas pitch (F0) & intonasi mekanis
-        4. Spectral flatness (derajat noise vs nada harmonik)
+        1. Digital Silence (ketiadaan ambient noise / noise floor = 0 pada jeda bicara)
+        2. Brick-wall High-Frequency Cut-off (codec TTS web memotong frekuensi tajam di batas 10.5 - 11kHz / 8kHz)
+        3. Spectral Rolloff (konsentrasi energi terpotong pada frekuensi menengah)
+        4. Jitter & Pitch Perturbation
         """
-        heuristics = {
-            "tts_suspect": False,
-            "tts_confidence_boost": 0.0,
-            "reasons": []
-        }
+        reasons = []
+        confidence_boost = 0.0
 
-        # 1. Deteksi Keheningan Digital Mutlak (Zero Ambient Noise)
-        # Suara manusia dari mic nyata selalu memiliki noise floor (> -60dB).
-        # TTS seperti Google Translate di bagian jeda bernilai 0.0 persis atau sangat rendah.
-        abs_y = np.abs(y)
-        silent_samples_ratio = float(np.mean(abs_y < 1e-4))
-        if silent_samples_ratio > 0.15:
-            heuristics["reasons"].append("Keheningan latar belakang digital mutlak (khas generator TTS)")
-            heuristics["tts_confidence_boost"] += 0.25
+        # 1. Deteksi Keheningan Digital Ekstrem / Zero Ambient Noise
+        frame_len = 512
+        if len(y) >= frame_len:
+            frames = librosa.util.frame(y, frame_length=frame_len, hop_length=frame_len)
+            rms_frames = np.sqrt(np.mean(frames**2, axis=0))
+            quiet_ratio = float(np.mean(rms_frames < 0.0008))
+            extreme_silent_ratio = float(np.mean(rms_frames < 0.0001))
 
-        # 2. Spectral Rolloff (Pemeriksaan Cut-Off Frekuensi Tinggi)
-        # Web TTS biasanya di-encode pada 16kHz atau 22kHz dengan cut-off tajam di 8kHz atau 11kHz.
-        rolloff = librosa.feature.spectral_rolloff(y=y, sr=sr, roll_percent=0.95)
-        mean_rolloff = float(np.mean(rolloff))
-        if mean_rolloff < 6000:
-            heuristics["reasons"].append(f"Frekuensi tinggi terpotong tajam di {int(mean_rolloff)} Hz")
-            heuristics["tts_confidence_boost"] += 0.20
+            if extreme_silent_ratio > 0.05 or quiet_ratio > 0.08:
+                reasons.append("Keheningan latar belakang digital mutlak (tanpa noise floor mikrofon alami)")
+                confidence_boost += 0.35
 
-        # 3. Variabilitas Intonasi / Pitch (F0 Variance)
-        # Suara Google Translate / TTS sintetis memiliki nada dasar yang terlalu stabil/monoton.
+        # 2. Pemeriksaan Cut-off Frekuensi Tinggi (Ciri khas Google TTS / Neural Vocoder)
+        stft_mag = np.abs(librosa.stft(y, n_fft=1024, hop_length=256))
+        freq_bins = librosa.fft_frequencies(sr=sr, n_fft=1024)
+        if sr >= 20000:
+            idx_cut = np.where(freq_bins >= 10500)[0]
+            if len(idx_cut) > 0:
+                cut_idx = idx_cut[0]
+                energy_above = float(np.mean(stft_mag[cut_idx:, :]))
+                energy_below = float(np.mean(stft_mag[:cut_idx, :]))
+                drop_ratio = energy_above / (energy_below + 1e-8)
+                if drop_ratio < 0.08:
+                    reasons.append("Cut-off spektral tajam di atas 10.5 kHz (ciri khas Google Translate/Neural Vocoder)")
+                    confidence_boost += 0.40
+        else:
+            rolloff85 = float(np.mean(librosa.feature.spectral_rolloff(y=y, sr=sr, roll_percent=0.85)))
+            if rolloff85 < 4800:
+                reasons.append(f"Frekuensi terpusat di bawah {int(rolloff85)} Hz (spektrum terpotong)")
+                confidence_boost += 0.30
+
+        # 3. Variabilitas Intonasi / Pitch Perturbation
         try:
-            f0, voiced_flag, _ = librosa.pyin(y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C7'), sr=sr)
+            f0, voiced_flag, _ = librosa.pyin(
+                y,
+                fmin=librosa.note_to_hz('C2'),
+                fmax=librosa.note_to_hz('C7'),
+                sr=sr,
+                frame_length=1024,
+            )
             voiced_f0 = f0[voiced_flag] if voiced_flag is not None else np.array([])
-            if len(voiced_f0) > 10:
-                f0_std = float(np.std(voiced_f0))
-                # Manusia berbicara alami biasanya memiliki variasi pitch > 20 Hz
-                if f0_std < 18.0:
-                    heuristics["reasons"].append(f"Variasi intonasi vokal sangat rendah/mekanis (Std: {f0_std:.1f} Hz)")
-                    heuristics["tts_confidence_boost"] += 0.25
+            if len(voiced_f0) > 8:
+                f0_diff = np.abs(np.diff(voiced_f0))
+                jitter_proxy = float(np.mean(f0_diff) / (np.mean(voiced_f0) + 1e-8))
+                if jitter_proxy < 0.035:
+                    reasons.append("Transisi vokal terlalu mulus secara sintetis tanpa fluktuasi pita suara alami")
+                    confidence_boost += 0.25
         except Exception:
             pass
 
         # 4. Spectral Flatness
         flatness = librosa.feature.spectral_flatness(y=y)
-        mean_flatness = float(np.mean(flatness))
-        if mean_flatness < 0.002:
-            heuristics["reasons"].append("Sinyal vokal sangat terisolasi tanpa resonansi ruangan")
-            heuristics["tts_confidence_boost"] += 0.15
+        min_flatness = float(np.min(flatness))
+        if min_flatness < 1e-5:
+            reasons.append("Ditemukan segmen frekuensi sintetis terisolasi mutlak")
+            confidence_boost += 0.15
 
-        if heuristics["tts_confidence_boost"] >= 0.40:
-            heuristics["tts_suspect"] = True
+        is_tts_suspect = confidence_boost >= 0.30
 
-        return heuristics
+        return {
+            "tts_suspect": is_tts_suspect,
+            "confidence_boost": min(0.95, confidence_boost),
+            "reasons": reasons,
+        }
 
     def predict(self, y: np.ndarray, sr: int):
         self.load()
         if len(y) < sr:
             raise ValueError("Durasi audio terlalu pendek, rekam minimal sekitar 1 detik")
-        y = y.astype(np.float32)
-        y = y / max(float(np.max(np.abs(y))), 1e-8)
 
-        # 1. Inferensi model neural network
-        outputs = self._classifier({"array": y, "sampling_rate": sr}, top_k=None)
+        # 1. Analisis Forensik Akustik Heuristik (pada sampling rate asli audio)
+        heuristics = self.analyze_acoustic_heuristics(y, sr)
+        boost = heuristics["confidence_boost"]
+
+        # 2. Resample ke 16000 Hz untuk classifier Wav2Vec2 agar tidak memerlukan torchaudio
+        if sr != 16000:
+            y_16k = librosa.resample(y, orig_sr=sr, target_sr=16000)
+        else:
+            y_16k = y
+
+        y_16k = y_16k.astype(np.float32)
+        y_16k = y_16k / max(float(np.max(np.abs(y_16k))), 1e-8)
+
+        # 3. Inferensi model neural network lokal
+        outputs = self._classifier({"array": y_16k, "sampling_rate": 16000}, top_k=None)
         probabilities = {"ORISINIL": 0.0, "DEEPFAKE": 0.0}
         for item in outputs:
             label = self.normalize_label(str(item["label"]))
@@ -117,13 +147,23 @@ class AudioDetector:
         elif total != 1:
             probabilities = {key: value / total for key, value in probabilities.items()}
 
-        # 2. Analisis Forensik Akustik Heuristik
-        heuristics = self.analyze_acoustic_heuristics(y, sr)
+        raw_fake_score = probabilities["DEEPFAKE"]
+
+        # 4. Fusi Skor Forensik Akustik & Neural Model
         if heuristics["tts_suspect"]:
-            # Jika artefak TTS kuat (misal Google Translate), tingkatkan probabilitas DEEPFAKE
-            boost = min(heuristics["tts_confidence_boost"], 0.65)
-            probabilities["DEEPFAKE"] = min(0.98, probabilities["DEEPFAKE"] + boost)
-            probabilities["ORISINIL"] = max(0.02, 1.0 - probabilities["DEEPFAKE"])
+            # Jika fitur TTS (Google Translate / Vokal Sintetis) terdeteksi kuat:
+            combined_fake = max(raw_fake_score, 0.55) + (boost * 0.50)
+            combined_fake = min(0.985, combined_fake)
+        else:
+            combined_fake = raw_fake_score
+
+        final_fake = float(np.clip(combined_fake, 0.01, 0.99))
+        final_real = 1.0 - final_fake
+
+        probabilities = {
+            "ORISINIL": round(final_real, 4),
+            "DEEPFAKE": round(final_fake, 4),
+        }
 
         # Ambang batas dinamis
         prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.45 else "ORISINIL"
@@ -131,7 +171,12 @@ class AudioDetector:
 
 
 def load_audio_segment(temp_path: str, max_seconds: int = 30):
-    y, sr = librosa.load(temp_path, sr=16000, mono=True)
+    # Load audio dengan sampling asli (atau hingga 24kHz) agar analisis cut-off frekuensi tinggi akurat
+    y, sr = librosa.load(temp_path, sr=None, mono=True)
+    if sr > 24000:
+        y = librosa.resample(y, orig_sr=sr, target_sr=24000)
+        sr = 24000
+
     if len(y) > sr:
         peak_index = int(np.argmax(np.abs(y)))
         desired_samples = max_seconds * sr
