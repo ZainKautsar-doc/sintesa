@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Home, Sparkles, Sliders, Menu, X } from 'lucide-react';
+import { Home, Sparkles, Sliders, Menu, X } from 'lucide-react';
 import { getHealth } from '../services/api';
+import sintesaLogo from '../assets/vite.svg';
 
 interface NavbarProps {
   currentPage: 'landing' | 'detection' | 'simulation';
@@ -31,8 +32,8 @@ export default function Navbar({ currentPage, onNavigate }: NavbarProps) {
           onClick={() => handleNav('landing')}
           className="flex items-center gap-2.5 text-left transition hover:opacity-90"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal border border-deep-teal/20 sm:h-10 sm:w-10">
-            <ShieldCheck className="h-4 w-4 text-deep-teal sm:h-5 sm:w-5" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-btn bg-soft-paper border border-warm-mist p-1.5 shadow-subtle sm:h-10 sm:w-10">
+            <img src={sintesaLogo} alt="SINTESA Logo" className="h-full w-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 sm:gap-2">
