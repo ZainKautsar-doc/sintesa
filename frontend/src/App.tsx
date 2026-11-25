@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import Navbar from './components/Navbar';
+import LandingPage from './components/LandingPage';
 import MediaUploader from './components/MediaUploader';
 import DetectionResult from './components/DetectionResult';
 import SecurityChatbot from './components/SecurityChatbot';
 import SimulationPage from './components/SimulationPage';
 import { detectMedia } from './services/api';
 import type { DetectionResult as DetectionResultType, MediaType } from './types';
-import { RefreshCw, Sparkles, Sliders } from 'lucide-react';
+import { RefreshCw, ArrowLeft, Image as ImageIcon, Mic } from 'lucide-react';
 
 function App() {
+  const [page, setPage] = useState<'landing' | 'detection' | 'simulation'>('landing');
   const [mediaType, setMediaType] = useState<MediaType>('image');
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<DetectionResultType | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resetKey, setResetKey] = useState(0);
-  const [page, setPage] = useState<'detection' | 'simulation'>('detection');
 
   const changeMode = (mode: MediaType) => {
     setMediaType(mode);
@@ -55,76 +56,97 @@ function App() {
     setResetKey((value) => value + 1);
   };
 
+  const handleStartDetection = (type?: MediaType) => {
+    if (type) {
+      setMediaType(type);
+    }
+    setPage('detection');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleStartSimulation = () => {
+    setPage('simulation');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-parchment text-ink antialiased">
-      <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* Top Navigation Bar / Page Switcher */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-warm-mist pb-4">
-          <div className="inline-flex rounded-btn border border-warm-mist bg-soft-paper p-1 shadow-subtle">
-            <button
-              onClick={() => setPage('detection')}
-              className={`flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-medium transition-all ${
-                page === 'detection'
-                  ? 'bg-deep-teal text-white shadow-sm'
-                  : 'text-graphite hover:text-ink hover:bg-parchment'
-              }`}
-            >
-              <Sparkles className="h-4 w-4" />
-              Deteksi Media
-            </button>
-            <button
-              onClick={() => setPage('simulation')}
-              className={`flex items-center gap-2 rounded-btn px-4 py-2 text-sm font-medium transition-all ${
-                page === 'simulation'
-                  ? 'bg-deep-teal text-white shadow-sm'
-                  : 'text-graphite hover:text-ink hover:bg-parchment'
-              }`}
-            >
-              <Sliders className="h-4 w-4" />
-              Simulasi Probabilitas
-            </button>
+      <Navbar currentPage={page} onNavigate={(nextPage) => setPage(nextPage)} />
+
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        {page === 'landing' && (
+          <LandingPage
+            onStartDetection={handleStartDetection}
+            onStartSimulation={handleStartSimulation}
+          />
+        )}
+
+        {page === 'simulation' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-warm-mist pb-4">
+              <button
+                type="button"
+                onClick={() => setPage('landing')}
+                className="flex items-center gap-1.5 text-xs font-semibold text-graphite transition hover:text-ink"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Kembali ke Beranda
+              </button>
+              <span className="text-xs text-ash">Edukasi Pembentukan Skor Keputusan</span>
+            </div>
+            <SimulationPage />
           </div>
+        )}
 
-          {page === 'detection' && (
-            <button
-              onClick={reset}
-              className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink"
-            >
-              <RefreshCw className="h-3.5 w-3.5" />
-              Reset Form
-            </button>
-          )}
-        </div>
+        {page === 'detection' && (
+          <div className="space-y-6">
+            {/* Top Workspace Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-warm-mist pb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPage('landing')}
+                  className="flex items-center gap-1 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-semibold text-graphite shadow-subtle transition hover:text-ink"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Beranda
+                </button>
 
-        {page === 'simulation' ? (
-          <SimulationPage />
-        ) : (
-          <>
-            {/* Mode Selector for Detection */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="inline-flex rounded-btn border border-warm-mist bg-soft-paper p-1 shadow-subtle">
-                {(['image', 'audio'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => changeMode(mode)}
-                    className={`rounded-btn px-4 py-2 text-sm font-medium transition-all ${
-                      mediaType === mode
-                        ? 'bg-deep-teal text-white shadow-sm'
-                        : 'text-graphite hover:text-ink hover:bg-parchment'
-                    }`}
-                  >
-                    {mode === 'image' ? 'Deteksi Gambar' : 'Deteksi Audio'}
-                  </button>
-                ))}
+                <div className="inline-flex rounded-btn border border-warm-mist bg-soft-paper p-1 shadow-subtle">
+                  {(['image', 'audio'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => changeMode(mode)}
+                      className={`flex items-center gap-1.5 rounded-btn px-4 py-1.5 text-xs font-semibold transition ${
+                        mediaType === mode
+                          ? 'bg-deep-teal text-white shadow-sm'
+                          : 'text-graphite hover:text-ink hover:bg-parchment'
+                      }`}
+                    >
+                      {mode === 'image' ? (
+                        <ImageIcon className="h-3.5 w-3.5" />
+                      ) : (
+                        <Mic className="h-3.5 w-3.5" />
+                      )}
+                      {mode === 'image' ? 'Deteksi Gambar' : 'Deteksi Audio'}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p className="hidden text-xs text-ash sm:block">
-                Format didukung: {mediaType === 'image' ? 'JPG, PNG, WEBP' : 'WAV, MP3, WEBM, FLAC'}
-              </p>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={reset}
+                  className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Reset Form
+                </button>
+              </div>
             </div>
 
             {error && (
-              <div className="mb-6 rounded-card border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 shadow-subtle">
+              <div className="rounded-card border border-rose-300 bg-rose-50 px-4 py-3 text-xs text-rose-800 shadow-subtle">
                 {error}
               </div>
             )}
@@ -146,12 +168,12 @@ function App() {
               </section>
 
               <aside>
-                <div className="sticky top-6">
+                <div className="sticky top-20">
                   <SecurityChatbot result={result} resetKey={resetKey} />
                 </div>
               </aside>
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>

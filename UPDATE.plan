@@ -1,0 +1,58 @@
+# UPDATE.plan: Implementasi Landing Page SINTESA
+
+## 1. Ringkasan Eksekutif & Tujuan
+Membuat antarmuka **Landing Page** yang profesional dan terpadu untuk SINTESA (*Sistem Identifikasi Rekayasa Suara dan Citra*), sehingga pengguna yang pertama kali membuka situs disambut dengan informasi komprehensif mengenai kapabilitas *Defensive AI*, mitigasi *social engineering*, alur kerja forensik, statistik evaluasi, dan identitas proyek Tugas Akhir Keamanan Informasi sebelum masuk ke workspace deteksi.
+
+---
+
+## 2. Pilihan & Preferensi Desain (Berdasarkan Diskusi Pengguna)
+1. **Gaya Tampilan:** *Interactive Research Desk* sesuai [design.md](file:///c:/Users/HP/Downloads/FinalProjectKI/design.md) (Warm Parchment `#faf8f5`, Soft Paper `#fdfbfa`, Deep Teal `#016a71`, Ink `#27251e`, Hairline Warm Mist borders).
+2. **Arsitektur Navigasi:** SPA Tab/Nav terpadu:
+   - Header Navbar dilengkapi navigasi: `Beranda (Landing Page)` | `Deteksi Media` | `Simulasi Probabilitas`.
+   - Tombol Call-to-Action (CTA) di Hero section: *"Mulai Deteksi Media"* (langsung berpindah ke tab Deteksi) dan *"Coba Simulasi"* (ke tab Simulasi).
+3. **Komponen Tambahan yang Dimasukkan:**
+   - **Hero Section:** Judul utama, deskripsi platform, dual CTA button, indikator status sistem *real-time*, dan visual preview card.
+   - **Alur Kerja Forensik 4-Tahap:** 
+     1. Unggah Media (Citra/Audio)
+     2. Ekstraksi Fitur & Inferensi Model Hugging Face Lokal
+     3. Visualisasi Forensik (Error Level Analysis & Mel-Spectrogram)
+     4. Analisis Mitigasi Risiko Rekayasa Sosial via LLM OpenRouter
+   - **Fitur Unggulan (Core Capabilities):** Kartu penjelasan deteksi visual, deteksi suara (voice cloning), ELA, spektrogram, dan chatbot mitigasi.
+   - **Edukasi & Kewaspadaan Rekayasa Sosial:** Skenario ancaman nyata (e-KYC bypass, fake CEO emergency call, deepfake video call) beserta protokol verifikasi kanal independen.
+   - **Statistik & Metrik Evaluasi Model:** Ringkasan performa inferensi (kecepatan respons lokal ~ms, akurasi benchmark, privasi lokal tanpa upload ke server pihak ketiga).
+   - **Profil Proyek & Tim Pengembang:** Informasi Tugas Akhir Mata Kuliah Keamanan Informasi, komitmen etika riset, dan *disclaimer* defensif.
+   - **Footer:** Navigasi cepat, status API backend, dan hak cipta akademis.
+
+---
+
+## 3. Rencana Komponen & Perubahan File
+
+### A. Komponen Baru
+- `frontend/src/components/LandingPage.tsx`
+  - Menerima prop `onStartDetection: () => void` dan `onStartSimulation: () => void`.
+  - Dibangun modular dengan sub-bagian:
+    - `HeroSection`
+    - `ForensicWorkflowSection`
+    - `FeatureGridSection`
+    - `ThreatMitigationSection` (Edukasi Social Engineering & e-KYC)
+    - `EvaluationMetricsSection` (Statistik performa)
+    - `ProjectCreditSection` (Tugas Akhir Keamanan Informasi)
+    - `Footer`
+
+### B. Pembaruan Komponen yang Ada
+- `frontend/src/App.tsx`
+  - Perluas state `page`: `'landing' | 'detection' | 'simulation'`. Default halaman awal: `'landing'`.
+  - Tambahkan tombol navigasi "Beranda" pada tab selector atau header.
+  - Sediakan handler untuk berpindah langsung ke `'detection'` dengan opsi media `'image'` atau `'audio'`.
+- `frontend/src/components/Navbar.tsx`
+  - Hubungkan logo / judul SINTESA agar dapat diklik untuk kembali ke Beranda (`'landing'`).
+  - Tambahkan link tab cepat atau tombol CTA di header navbar.
+
+---
+
+## 4. Langkah-Langkah Eksekusi
+- [ ] **Langkah 1:** Buat file `frontend/src/components/LandingPage.tsx` dengan desain *Warm Research Desk*.
+- [ ] **Langkah 2:** Integrasikan `LandingPage` ke dalam `App.tsx` dan perbarui mekanisme routing state tab (`landing`, `detection`, `simulation`).
+- [ ] **Langkah 3:** Perbarui `Navbar.tsx` agar memiliki link navigasi aktif ke ketiga halaman (Beranda, Deteksi, Simulasi) beserta tombol CTA cepat.
+- [ ] **Langkah 4:** Jalankan `npm run build` dan validasi type-check TypeScript untuk memastikan tidak ada regresi kode.
+- [ ] **Langkah 5:** Uji tampilan di browser dan pastikan transisi antar halaman mulus.
