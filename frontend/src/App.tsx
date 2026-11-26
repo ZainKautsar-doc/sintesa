@@ -102,8 +102,8 @@ function App() {
         {page === 'detection' && (
           <div className="space-y-5 sm:space-y-6">
             {/* Top Workspace Controls: Responsive flex-wrap */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-warm-mist pb-3 sm:pb-4">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex flex-col gap-3 border-b border-warm-mist pb-3.5 sm:flex-row sm:items-center sm:justify-between sm:pb-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-start sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setPage('landing')}
@@ -135,10 +135,10 @@ function App() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={reset}
-                  className="flex items-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-2.5 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink sm:px-3"
+                  className="flex w-full items-center justify-center gap-1.5 rounded-btn border border-warm-mist bg-soft-paper px-3 py-1.5 text-xs font-medium text-graphite shadow-subtle transition hover:border-graphite hover:text-ink sm:w-auto"
                 >
                   <RefreshCw className="h-3.5 w-3.5" />
                   Reset Form
@@ -152,8 +152,8 @@ function App() {
               </div>
             )}
 
-            <div className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
-              <section className="space-y-6">
+            <div className="grid items-start gap-5 lg:grid-cols-[1.15fr_.85fr] lg:gap-6">
+              <section className="min-w-0 space-y-5 lg:space-y-6">
                 <div className="rounded-card border border-warm-mist bg-soft-paper p-4 shadow-card sm:p-6">
                   <MediaUploader
                     mediaType={mediaType}
@@ -168,12 +168,10 @@ function App() {
                 </div>
               </section>
 
-              <aside>
-                <div className="lg:sticky lg:top-20">
-                  <ErrorBoundary fallbackTitle="Asisten Forensik AI Mengalami Gangguan">
-                    <SecurityChatbot result={result} resetKey={resetKey} />
-                  </ErrorBoundary>
-                </div>
+              <aside className="min-w-0 lg:sticky lg:top-20">
+                <ErrorBoundary fallbackTitle="Asisten Forensik AI Mengalami Gangguan">
+                  <SecurityChatbot result={result} resetKey={resetKey} />
+                </ErrorBoundary>
               </aside>
             </div>
           </div>

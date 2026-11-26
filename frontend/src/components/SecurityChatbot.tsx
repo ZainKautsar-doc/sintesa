@@ -68,7 +68,7 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
   const prompts = ['Bagaimana cara verifikasi e-KYC aman?', 'Ciri penipuan voice cloning?', 'Kenapa hasil ini bisa keliru?'];
 
   return (
-    <div className="flex h-[520px] sm:h-[620px] lg:h-[680px] flex-col rounded-card border border-warm-mist bg-soft-paper shadow-card">
+    <div className="flex h-[460px] sm:h-[540px] lg:h-[calc(100vh-7.5rem)] lg:max-h-[760px] lg:min-h-[560px] flex-col overflow-hidden rounded-card border border-warm-mist bg-soft-paper shadow-card">
       {/* Header */}
       <div className="flex items-center gap-2.5 border-b border-warm-mist bg-parchment/60 px-4 py-3 sm:px-5 sm:py-4">
         <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-btn bg-deep-teal-light text-deep-teal border border-deep-teal/20">
