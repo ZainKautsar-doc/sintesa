@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Bot, Send, Sparkles, User } from 'lucide-react';
+import { Bot, Send, User } from 'lucide-react';
 import type { ChatMessage, DetectionResult } from '../types';
 import { sendChat } from '../services/api';
 
@@ -73,8 +73,8 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
         <div>
           <div className="flex items-center gap-2">
             <p className="text-xs sm:text-sm font-bold text-ink">Asisten Forensik AI</p>
-            <span className="flex items-center gap-1 rounded-full bg-soft-paper px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-deep-teal border border-warm-mist">
-              <Sparkles className="h-3 w-3" /> Penasihat Keamanan
+            <span className="rounded-full bg-soft-paper px-2 py-0.5 text-[9px] sm:text-[10px] font-semibold text-deep-teal border border-warm-mist">
+              Penasihat Keamanan
             </span>
           </div>
           <p className="text-[10px] sm:text-[11px] text-graphite">Analisis mitigasi risiko social engineering & e-KYC</p>
