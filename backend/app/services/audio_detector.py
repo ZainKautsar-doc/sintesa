@@ -149,13 +149,11 @@ class AudioDetector:
 
         raw_fake_score = probabilities["DEEPFAKE"]
 
-        # 4. Fusi Skor Forensik Akustik & Neural Model
-        if heuristics["tts_suspect"]:
-            # Jika fitur TTS (Google Translate / Vokal Sintetis) terdeteksi kuat:
-            combined_fake = max(raw_fake_score, 0.55) + (boost * 0.50)
-            combined_fake = min(0.985, combined_fake)
+        # 4. Fusi Skor Forensik Akustik & Neural Model (seimbang agar rekaman mikrofon browser tidak false-positive)
+        if heuristics["tts_suspect"] and raw_fake_score >= 0.35:
+            combined_fake = (0.80 * raw_fake_score) + (0.20 * min(1.0, boost))
         else:
-            combined_fake = raw_fake_score
+            combined_fake = (0.90 * raw_fake_score) + (0.10 * min(1.0, boost))
 
         final_fake = float(np.clip(combined_fake, 0.01, 0.99))
         final_real = 1.0 - final_fake
@@ -165,8 +163,8 @@ class AudioDetector:
             "DEEPFAKE": round(final_fake, 4),
         }
 
-        # Ambang batas dinamis
-        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.45 else "ORISINIL"
+        # Ambang batas seimbang: tetapkan DEEPFAKE hanya jika probabilitas >= 0.65
+        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.65 else "ORISINIL"
         return prediction, probabilities[prediction], probabilities
 
 

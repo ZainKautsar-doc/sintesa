@@ -158,27 +158,31 @@ class ImageDetector:
         color_data = self.analyze_color_temperature_saturation(image)
         ela_val = self.analyze_ela_artifacts(image)
 
-        # Hitung Akumulasi Poin Kecurigaan AI Forensik
+        # Cek metadata EXIF kamera asli (Make/Model) sebagai sinyal pendukung orisinalitas
+        exif = image.getexif()
+        has_camera_exif = bool(exif and (exif.get(271) or exif.get(272)))  # 271=Make, 272=Model
+
+        # Hitung Akumulasi Poin Kecurigaan AI Forensik (ambang batas lebih ketat agar foto kamera tidak false-positive)
         forensic_ai_score = 0.0
-        if fft_data["is_anomalous"]:
-            forensic_ai_score += 0.22
-        if noise_data["is_synthetic"]:
+        if fft_data["high_freq_variance"] > 4.5 or fft_data["high_freq_variance"] < 0.8:
             forensic_ai_score += 0.25
+        if noise_data["residual_std"] < 1.4 or noise_data["kurtosis"] > 25.0:
+            forensic_ai_score += 0.30
         if color_data["oversaturated_sheen"]:
-            forensic_ai_score += 0.15
-        if ela_val < 1.1 or ela_val > 9.5:  # Terlalu murni sintetis (<1.1) atau composited (>9.5)
-            forensic_ai_score += 0.18
+            forensic_ai_score += 0.20
+        if ela_val < 0.6 or ela_val > 12.0:
+            forensic_ai_score += 0.25
 
-        # Weighted Ensemble:
-        # Jika model neural network condong fake ATAU forensik sinyal menemukan anomali kuat
-        combined_fake = (0.55 * raw_deepfake_score) + (0.45 * min(1.0, forensic_ai_score * 1.3))
+        # Weighted Ensemble: prioritaskan model neural network (82%) + sinyal forensik (18%)
+        combined_fake = (0.82 * raw_deepfake_score) + (0.18 * min(1.0, forensic_ai_score))
 
-        # Bila model awal ragu (30% - 60%) tetapi sinyal fisik mendeteksi artefak AI, beri boost
-        if raw_deepfake_score >= 0.25 and forensic_ai_score >= 0.35:
-            combined_fake = max(combined_fake, 0.72)
-        elif forensic_ai_score >= 0.55:
-            # Bukti forensik fisik sangat mencurigakan (FFT + noise halus khas Midjourney/FLUX)
-            combined_fake = max(combined_fake, 0.68)
+        # Hanya beri boost jika neural network sudah cukup curiga (>= 0.40) DAN forensik mendukung
+        if raw_deepfake_score >= 0.40 and forensic_ai_score >= 0.50:
+            combined_fake = max(combined_fake, 0.70)
+
+        # Jika ada EXIF kamera asli dan model tidak sangat yakin deepfake, kurangi risiko false-positive
+        if has_camera_exif and raw_deepfake_score < 0.75:
+            combined_fake -= 0.08
 
         final_fake = float(np.clip(combined_fake, 0.01, 0.99))
         final_real = 1.0 - final_fake
@@ -188,8 +192,8 @@ class ImageDetector:
             "DEEPFAKE": round(final_fake, 4),
         }
 
-        # Threshold defensif: jika probabilitas DEEPFAKE >= 0.45, tetapkan DEEPFAKE
-        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.45 else "ORISINIL"
+        # Threshold seimbang: tetapkan DEEPFAKE hanya jika probabilitas >= 0.55
+        prediction = "DEEPFAKE" if probabilities["DEEPFAKE"] >= 0.55 else "ORISINIL"
         confidence = probabilities[prediction]
         return prediction, confidence, probabilities
 
