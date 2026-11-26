@@ -47,10 +47,6 @@ export default function SecurityChatbot({ result, resetKey }: Props) {
   const submit = async (text = input) => {
     const content = text.trim();
     if (!content || loading) return;
-    if (content.length > 500) {
-      setMessages((current) => [...current, { role: 'assistant', content: 'Pertanyaan terlalu panjang. Ringkas menjadi maksimal 500 karakter.' }]);
-      return;
-    }
     const next = [...messages, { role: 'user' as const, content }];
     setMessages(next);
     setInput('');

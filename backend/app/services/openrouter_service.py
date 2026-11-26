@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 from app.config import (
     OPENROUTER_API_KEY,
@@ -46,53 +47,60 @@ async def chat_completion(detection_context: dict | None, messages: list[dict]) 
         "penipuan", "mitigasi", "keamanan", "hasil", "media", "kloning",
         "deep fake", "impostor", "identitas", "risiko", "confidence",
     )
-    if messages:
-        latest_message = str(messages[-1].get("content", "")).strip().lower()
-        if len(latest_message) > 500:
-            return (
-                "Pertanyaan terlalu panjang. Ringkas menjadi maks. 500 karakter agar dapat diproses.",
-                "none",
-                True,
-            )
-        if latest_message and not any(topic in latest_message for topic in allowed_topics):
-            return (
-                "SINTESA Assistant hanya menjawab pertanyaan terkait deteksi deepfake, forensik media, verifikasi identitas, serta pencegahan social engineering.",
-                "none",
-                True,
-            )
+    # Kirim seluruh riwayat percakapan tanpa pembatasan jumlah pesan/karakter.
+    payload_messages.extend(messages if isinstance(messages, list) else [])
 
-    # Kirim hanya konteks dan maksimal 6 pesan terakhir untuk mencegah pertumbuhan token.
-    payload_messages.extend(messages[-6:] if isinstance(messages, list) else [])
-
-    models = [OPENROUTER_PRIMARY_MODEL, *OPENROUTER_FALLBACK_MODELS]
+    extra_fallbacks = [
+        "openrouter/free",
+        "google/gemma-3-27b-it:free",
+        "mistralai/mistral-small-3.1-24b-instruct:free",
+        "qwen/qwen-2.5-72b-instruct:free",
+    ]
+    models = list(dict.fromkeys([OPENROUTER_PRIMARY_MODEL, *OPENROUTER_FALLBACK_MODELS, *extra_fallbacks]))
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        for model in dict.fromkeys(models):
-            try:
-                response = await client.post(
-                    OPENROUTER_BASE_URL,
-                    headers=headers,
-                    json={
-                        "model": model,
-                        "messages": payload_messages,
-                        "temperature": 0.5,
-                        "max_tokens": 220,
-                    },
-                )
-                if response.status_code == 200:
-                    data = response.json()
-                    reply = data["choices"][0]["message"].get("content")
-                    if isinstance(reply, str) and reply.strip():
-                        return reply.strip(), model, False
-            except (httpx.HTTPError, KeyError, IndexError, ValueError):
-                continue
+        for model in models:
+            for attempt in range(2):
+                try:
+                    response = await client.post(
+                        OPENROUTER_BASE_URL,
+                        headers=headers,
+                        json={
+                            "model": model,
+                            "messages": payload_messages,
+                            "temperature": 0.5,
+                            "max_tokens": 1024,
+                        },
+                    )
+                    if response.status_code == 200:
+                        data = response.json()
+                        reply = data["choices"][0]["message"].get("content")
+                        if isinstance(reply, str) and reply.strip():
+                            return reply.strip(), model, False
+                    if response.status_code == 429 and attempt == 0:
+                        await asyncio.sleep(1.0)
+                        continue
+                    break
+                except (httpx.HTTPError, KeyError, IndexError, ValueError):
+                    break
+
+    if detection_context:
+        pred = detection_context.get("prediction", "UNKNOWN")
+        conf = detection_context.get("confidence", 0)
+        risk = detection_context.get("risk_level", "SEDANG")
+        return (
+            f"Ringkasan Lokal: Media terdeteksi sebagai **{pred}** (keyakinan {conf:.1%}, risiko **{risk}**). "
+            "Lakukan verifikasi silang melalui saluran resmi sebelum mengambil keputusan.",
+            "local-fallback",
+            True,
+        )
 
     return (
-        "Asisten LLM sedang tidak tersedia karena layanan atau model gratis sedang mengalami keterbatasan. Hasil deteksi model lokal tetap dapat digunakan.",
+        "Asisten LLM sedang mengalami antrean pada layanan eksternal. Silakan kirim ulang pertanyaan Anda beberapa saat lagi.",
         "fallback",
         True,
     )
